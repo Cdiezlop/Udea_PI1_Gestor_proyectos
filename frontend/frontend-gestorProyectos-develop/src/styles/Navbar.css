@@ -1,0 +1,49 @@
+.navbar {
+  display: flex;
+  justify-content: center; /* Centrar el contenido horizontalmente */
+  align-items: center; /* Centrar verticalmente */
+  padding: 8px 0; /* Reducir el espacio vertical */
+  background-color: #f8f9fa; /* Fondo claro */
+  border-bottom: 1px solid #ddd; /* Línea inferior */
+}
+
+.navbar-content {
+  width: 100%; /* Ocupa el 95% del ancho para reducir separación lateral */
+  max-width: 1650px; /* Limitar el ancho máximo */
+  display: flex;
+  justify-content: space-between; /* Separar título y usuario */
+  align-items: center; /* Centrar elementos verticalmente */
+}
+
+.navbar-title {
+  font-size: 1.4rem; /* Reducir el tamaño del título */
+  font-weight: bold;
+  margin: 0; /* Sin márgenes */
+  padding-left: 10px; /* Añadir espacio a la izquierda */
+}
+
+.btn-danger {
+  font-size: 0.85rem; /* Reducir un poco el tamaño del botón */
+  padding: 6px 12px; /* Reducir el tamaño del botón */
+  border-radius: 5px; /* Esquinas redondeadas */
+}
+
+.navbar-admin {
+  color: #0D6EFD; /* Azul para admin */
+}
+
+.navbar-basico {
+  color: #0D6EFD; /* Azul para básico */
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Reducir espacio entre el nombre y el botón */
+}
+
+.user-name {
+  font-size: 0.95rem; /* Reducir un poco el tamaño del texto */
+  font-weight: 500;
+  color: #555; /* Color gris oscuro */
+}

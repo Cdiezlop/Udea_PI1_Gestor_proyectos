@@ -1,0 +1,2 @@
+include ':Gestor-De-Proyectos'
+rootProject.name = "Gestor-De-Proyectos"

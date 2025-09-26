@@ -1,0 +1,9 @@
+.proyectos-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.crear-solicitud {
+  width: 100%;
+  max-width: 200px;
+}

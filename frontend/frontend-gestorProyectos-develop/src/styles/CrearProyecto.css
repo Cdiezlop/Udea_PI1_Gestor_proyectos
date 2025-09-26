@@ -1,0 +1,8 @@
+.form-control.custom-control {
+  max-width: 350px;
+}
+
+.crear-btn {
+  width: 100%;
+  max-width: 200px;
+}

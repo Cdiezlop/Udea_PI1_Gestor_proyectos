@@ -1,0 +1,128 @@
+# 📁 Estructura del proyecto – Gestor de Proyectos
+
+```plaintext
+GESTOR DE PROYECTOS/
+│   .gitignore                                # Archivos/carpetas ignorados por Git
+│   Documentación_estructurada_del_proyecto.txt # Documento técnico del proyecto
+│   estructura.txt                            # Salida del comando tree /f
+│   README.md                                 # Documentación principal del repositorio
+│
+├───backend/                                  # Backend en Spring Boot
+│   └───Gestor-De-Proyectos-develop/
+│       │   .gitattributes / .gitignore       # Configuración de Git
+│       │   build.gradle / settings.gradle    # Configuración de dependencias y módulos
+│       │   gradlew / gradlew.bat             # Scripts para ejecutar Gradle
+│       │
+│       ├───gradle/wrapper/                   # Wrapper de Gradle
+│       │       gradle-wrapper.jar
+│       │       gradle-wrapper.properties
+│       │
+│       ├───scripts/                          # Scripts para inicializar datos en MongoDB
+│       │       categorias.mongodb            # Datos iniciales de categorías
+│       │       estados.mongodb               # Estados de proyectos
+│       │       usuarioAdmin.mongodb          # Usuario administrador inicial
+│       │
+│       └───src/
+│           ├───main/
+│           │   ├───java/co/edu/udea/gestor_de_proyectos/
+│           │   │   │   GestorDeProyectosApplication.java   # Clase principal del backend
+│           │   │   │
+│           │   │   ├───controller/           # Controladores REST (endpoints)
+│           │   │   │       CategoriaController.java
+│           │   │   │       ProyectoController.java
+│           │   │   │       UsuarioController.java
+│           │   │   │
+│           │   │   ├───entity/               # Entidades JPA (mapeo a BD)
+│           │   │   │       Categorias.java
+│           │   │   │       Estados.java
+│           │   │   │       Proyecto.java
+│           │   │   │       Usuario.java
+│           │   │   │
+│           │   │   ├───model/                # Modelos y DTOs
+│           │   │   │   ├───categoria/
+│           │   │   │   │       CategoriaModel.java
+│           │   │   │   ├───comentarios/
+│           │   │   │   │       ComentariosModel.java
+│           │   │   │   ├───dto/              # Objetos de transferencia de datos
+│           │   │   │   │       ActualizarProyectoDTO.java
+│           │   │   │   │       ActualizarUsuarioDTO.java
+│           │   │   │   │       CambiarContrasenaDTO.java
+│           │   │   │   │       ComentariosDTO.java
+│           │   │   │   │       CrearProyectoDTO.java
+│           │   │   │   │       CrearUsuarioDTO.java
+│           │   │   │   │       LoginUsuarioDTO.java
+│           │   │   │   ├───proyecto/
+│           │   │   │   │       CambioDeEstadoModel.java
+│           │   │   │   │       ProyectoModel.java
+│           │   │   │   └───usuario/
+│           │   │   │           UsuarioModel.java
+│           │   │   │
+│           │   │   ├───repository/           # Interfaces de persistencia (DAO)
+│           │   │   │       CategoriaRepository.java
+│           │   │   │       ProyectoRepository.java
+│           │   │   │       UsuarioRepository.java
+│           │   │   │
+│           │   │   └───service/              # Lógica de negocio
+│           │   │       │   CategoriaService.java
+│           │   │       │   FechaActualService.java
+│           │   │       │   ProyectoService.java
+│           │   │       │   UsuarioService.java
+│           │   │       └───implement/        # Implementaciones de servicios
+│           │   │               CategoriaServiceImpl.java
+│           │   │               ProyectoServiceImpl.java
+│           │   │               UsuarioServiceImpl.java
+│           │   │
+│           │   └───resources/
+│           │           application.yml        # Configuración de la aplicación
+│           │
+│           └───test/java/co/edu/udea/gestor_de_proyectos/
+│                   GestorDeProyectosApplicationTests.java # Pruebas unitarias
+│
+└───frontend/                                 # Frontend en React
+    └───frontend-gestorProyectos-develop/
+        │   .gitignore                        # Exclusiones de Git
+        │   package.json / package-lock.json  # Dependencias del proyecto
+        │   README.md                         # Documentación del frontend
+        │
+        ├───public/                           # Archivos estáticos
+        │       favicon.ico
+        │       index.html                    # HTML base
+        │       logo192.png / logo512.png
+        │       manifest.json
+        │       robots.txt
+        │
+        └───src/                              # Código fuente React
+            │   App.js / App.css              # Componente principal
+            │   index.js / index.css          # Punto de entrada
+            │   App.test.js / setupTests.js   # Pruebas
+            │   reportWebVitals.js            # Métricas de rendimiento
+            │
+            ├───components/                   # Componentes de la interfaz
+            │       CerrarSesion.js
+            │       CrearProyecto.js
+            │       DetalleProyectoAdmin.js
+            │       Login.js
+            │       Navbar.js
+            │       ProyectoDetalles.js
+            │       Proyectos.js
+            │       RecuperarContrasena.js
+            │       Registrar.js
+            │
+            ├───services/                     # Servicios para consumir API REST
+            │       cambiarEstadoProyectoService.js
+            │       crear-proyectosService.js
+            │       detalle-proyectosService.js
+            │       loginService.js
+            │       proyectosService.js
+            │       recuperarContrasenaService.js
+            │       registrar-usuarioService.js
+            │
+            └───styles/                       # Estilos CSS por componente
+                    CrearProyecto.css
+                    DetalleProyectoAdmin.css
+                    Login.css
+                    Navbar.css
+                    ProyectoDetalles.css
+                    Proyectos.css
+                    RecuperarContrasena.css
+                    Registrar.css

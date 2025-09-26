@@ -1,0 +1,13 @@
+db.usuario.insertOne({
+    _id: "1",
+    nombre: "Admin",
+    apellidos: "Principal",
+    edad: 99,
+    estrato: 10,
+    fechaCreacion: ISODate(),
+    fechaModificacion: ISODate(),
+    ciudad: "Medellin",
+    user: "admin",
+    password: "admin123",
+    rol: "admin"
+});

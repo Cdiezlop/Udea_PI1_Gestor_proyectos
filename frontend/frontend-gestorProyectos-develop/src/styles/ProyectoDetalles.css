@@ -1,0 +1,12 @@
+.proyecto-detalles {
+    font-size: 1rem;
+  }
+  
+  .proyecto-detalles .mb-3 {
+    font-size: 1.1rem;
+  }
+
+  .volver-lista {
+    width: 100%;
+    max-width: 200px;
+  }  
