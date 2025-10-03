@@ -41,6 +41,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    stdin_open: true
+    tty: true
     command: ["npm", "start"]
 
 volumes:
