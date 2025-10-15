@@ -3,6 +3,7 @@ package co.edu.udea.gestor_de_proyectos.model.dto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author Tgl. Jhoan Villa.
@@ -16,6 +17,10 @@ public class CrearProyectoDTO {
     private String descripcion;
     private String userId;
     private String categoria;
+    private String presupuesto;
+    private String dirigidoa_a;
+    private List<String> compromisosId;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private LocalDateTime fechaFinalizacion;
 }

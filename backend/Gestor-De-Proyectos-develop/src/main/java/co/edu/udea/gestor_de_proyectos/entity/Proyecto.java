@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author Tgl. Jhoan Villa.
@@ -21,8 +22,12 @@ public class Proyecto {
     private String descripcion;
     private String userId;
     private String categoria;
+    private String presupuesto;
+    private String dirigidoa_a;
+    private List<String> compromisosId;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private LocalDateTime fechaFinalizacion;
     private String estado;
     private ComentariosModel comentarios;
 }

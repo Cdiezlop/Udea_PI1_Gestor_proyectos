@@ -1,6 +1,5 @@
 package co.edu.udea.gestor_de_proyectos.entity;
 
-import co.edu.udea.gestor_de_proyectos.model.comentarios.ComentariosModel;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,10 +13,11 @@ import java.time.LocalDateTime;
  **/
 @Data
 @Document("compromiso")
-public class Proyecto {
+public class Compromisos {
     @Id
     private String id;
-    private String categoria;
+    private String estado;
     private String descripcion;
-    private LocalDateTime fechaModificacion;
+    private LocalDateTime fechaEstimada;
+    private LocalDateTime fechaReal;
 }

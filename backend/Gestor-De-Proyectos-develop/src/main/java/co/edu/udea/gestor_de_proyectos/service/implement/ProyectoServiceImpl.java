@@ -7,6 +7,7 @@ import co.edu.udea.gestor_de_proyectos.model.dto.ComentariosDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
+import co.edu.udea.gestor_de_proyectos.repository.CompromisosRepository;
 import co.edu.udea.gestor_de_proyectos.repository.ProyectoRepository;
 import co.edu.udea.gestor_de_proyectos.service.FechaActualService;
 import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
+    private final CompromisosRepository compromisosRepository;
     private final FechaActualService fechaActual;
 
     @Override
@@ -41,11 +44,24 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setDescripcion(crearProyectoDTO.getDescripcion());
         proyecto.setUserId(crearProyectoDTO.getUserId());
         proyecto.setCategoria(crearProyectoDTO.getCategoria());
+        proyecto.setPresupuesto(crearProyectoDTO.getPresupuesto());
+        proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
         proyecto.setFechaCreacion(fechaActual.getCurrentDate());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate());
+        proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaFinalizacion());
         proyecto.setEstado("Por revisar");
 
+        if (crearProyectoDTO.getCompromisosId() != null && !crearProyectoDTO.getCompromisosId().isEmpty()) {
+            List<String> compromisosValidos = crearProyectoDTO.getCompromisosId().stream()
+                    .filter(id -> compromisosRepository.existsById(id))
+                    .toList();
+            proyecto.setCompromisosId(compromisosValidos);
+        } else {
+            proyecto.setCompromisosId(new ArrayList<>());
+        }
+
         Proyecto savedProyecto = proyectoRepository.save(proyecto);
+        log.info("Proyecto creado con ID: {}", savedProyecto.getId());
         return mapToModel(savedProyecto);
     }
 
@@ -120,10 +136,14 @@ public class ProyectoServiceImpl implements ProyectoService {
         model.setDescripcion(proyecto.getDescripcion());
         model.setUserId(proyecto.getUserId());
         model.setCategoria(proyecto.getCategoria());
+        model.setPresupuesto(proyecto.getPresupuesto());
+        model.setDirigidoa_a(proyecto.getDirigidoa_a());
         model.setFechaCreacion(proyecto.getFechaCreacion());
         model.setFechaModificacion(proyecto.getFechaModificacion());
+        model.setFechaFinalizacion(proyecto.getFechaFinalizacion());
         model.setEstado(proyecto.getEstado());
         model.setComentarios(proyecto.getComentarios());
+        model.setCompromisosId(proyecto.getCompromisosId());
         return model;
     }
 

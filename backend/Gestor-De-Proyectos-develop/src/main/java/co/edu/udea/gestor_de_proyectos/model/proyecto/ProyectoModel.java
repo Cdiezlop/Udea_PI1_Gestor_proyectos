@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author Tgl. Jhoan Villa.
@@ -22,8 +23,12 @@ public class ProyectoModel {
     private String descripcion;
     private String userId;
     private String categoria;
+    private String presupuesto;
+    private String dirigidoa_a;
+    private List<String> compromisosId;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private LocalDateTime fechaFinalizacion;
     private String estado;
     private ComentariosModel comentarios;
 }

@@ -2,6 +2,9 @@ package co.edu.udea.gestor_de_proyectos.model.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * @author Tgl. Jhoan Villa.
  * Email: jhoan.villa
@@ -14,4 +17,8 @@ public class ActualizarProyectoDTO {
     private String userId;
     private String categoria;
     private String estado;
+    private String presupuesto;
+    private String dirigidoa_a;
+    private List<String> compromisosId;
+    private LocalDateTime fechaFinalizacion;
 }
