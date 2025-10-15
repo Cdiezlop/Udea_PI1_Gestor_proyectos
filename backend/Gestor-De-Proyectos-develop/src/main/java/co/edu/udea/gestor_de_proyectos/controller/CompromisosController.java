@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/compromisos")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CompromisosController {
 
