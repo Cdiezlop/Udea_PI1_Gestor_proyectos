@@ -1,9 +1,11 @@
 package co.edu.udea.gestor_de_proyectos.service.implement;
 
+import co.edu.udea.gestor_de_proyectos.entity.Compromisos;
 import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
 import co.edu.udea.gestor_de_proyectos.model.comentarios.ComentariosModel;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.ComentariosDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.CrearCompromisoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
@@ -51,14 +53,22 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaFinalizacion());
         proyecto.setEstado("Por revisar");
 
-        if (crearProyectoDTO.getCompromisosId() != null && !crearProyectoDTO.getCompromisosId().isEmpty()) {
-            List<String> compromisosValidos = crearProyectoDTO.getCompromisosId().stream()
-                    .filter(id -> compromisosRepository.existsById(id))
-                    .toList();
-            proyecto.setCompromisosId(compromisosValidos);
-        } else {
-            proyecto.setCompromisosId(new ArrayList<>());
+        List<String> compromisosIds = new ArrayList<>();
+
+        if (crearProyectoDTO.getCompromisos() != null && !crearProyectoDTO.getCompromisos().isEmpty()) {
+            for (CrearCompromisoDTO compromisoDTO : crearProyectoDTO.getCompromisos()) {
+                Compromisos compromiso = new Compromisos();
+                compromiso.setId(generateId(null));
+                compromiso.setDescripcion(compromisoDTO.getDescripcion());
+                compromiso.setEstado(compromisoDTO.getEstado());
+                compromiso.setFechaEstimada(compromisoDTO.getFechaEstimada());
+                compromiso.setFechaReal(fechaActual.getCurrentDate());
+                Compromisos saved = compromisosRepository.save(compromiso);
+                compromisosIds.add(saved.getId());
+            }
         }
+
+        proyecto.setCompromisosId(compromisosIds);
 
         Proyecto savedProyecto = proyectoRepository.save(proyecto);
         log.info("Proyecto creado con ID: {}", savedProyecto.getId());

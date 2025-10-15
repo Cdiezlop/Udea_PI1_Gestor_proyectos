@@ -19,7 +19,7 @@ public class CrearProyectoDTO {
     private String categoria;
     private String presupuesto;
     private String dirigidoa_a;
-    private List<String> compromisosId;
+    private List<CrearCompromisoDTO> compromisos;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
     private LocalDateTime fechaFinalizacion;
