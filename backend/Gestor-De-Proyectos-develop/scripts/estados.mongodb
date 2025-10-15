@@ -1,5 +1,8 @@
 db.estado.insertMany([
     { _id: "1", name: "Por revisar" },
     { _id: "2", name: "Aceptado" },
+    { _id: "2", name: "En ejecucion" },
     { _id: "3", name: "Rechazado" },
+    { _id: "4", name: "Atrasado" },
+    { _id: "5", name: "Terminado" },
 ]);
