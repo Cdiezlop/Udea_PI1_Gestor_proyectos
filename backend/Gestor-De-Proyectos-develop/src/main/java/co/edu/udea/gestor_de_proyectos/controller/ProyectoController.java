@@ -11,12 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 /**
- * @author Tgl. Jhoan Villa.
- * Email: jhoan.villa@dev-codes.io
+ * @author Tgl. Jhoan Villa y cristian diez
+ * Email: jhoan.villa  y cristian diez
  * @version Id: <b>gestor-de-proyectos</b> 01/09/2025, 10:33 a. m.
  **/
 @RestController
@@ -28,46 +29,32 @@ public class ProyectoController {
     private final ProyectoService proyectoService;
 
     @PostMapping("/crear")
-    public ResponseEntity<ProyectoModel> crearProyecto(@RequestBody CrearProyectoDTO crearProyectoDTO) {
+    public ResponseEntity<ProyectoModel> crearProyecto(@Valid @RequestBody CrearProyectoDTO crearProyectoDTO) {
         ProyectoModel proyectoModel = proyectoService.crearProyecto(crearProyectoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(proyectoModel);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProyectoModel> obtenerProyectoPorId(@PathVariable String id) {
-        ProyectoModel proyectoModel = proyectoService.proyectoPorId(id);
-        return ResponseEntity.ok(proyectoModel);
-    }
-
     @GetMapping("/listar")
-    public ResponseEntity<List<ProyectoModel>> listarProyectos() {
-        List<ProyectoModel> proyectos = proyectoService.listarProyectos();
-        return ResponseEntity.ok(proyectos);
+    public ResponseEntity<List<ProyectoModel>> listar() {
+        return ResponseEntity.ok(proyectoService.listarProyectos());
     }
 
-    @GetMapping("/listar/{userId}")
-    public ResponseEntity<List<ProyectoModel>> listarProyectosPorUsuario(@PathVariable String userId) {
-        List<ProyectoModel> proyectos = proyectoService.listarProyectosPorUsuario(userId);
-        return ResponseEntity.ok(proyectos);
+    @GetMapping("/{id}")
+    public ResponseEntity<ProyectoModel> obtener(@PathVariable String id) {
+        return ResponseEntity.ok(proyectoService.proyectoPorId(id));
     }
 
-    @GetMapping("/pagina/{page}/{size}")
-    public ResponseEntity<Page<ProyectoModel>> listarProyectos(@PathVariable int page, @PathVariable int size) {
-        Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size);
-        return ResponseEntity.ok(proyectos);
+    // Endpoint para actualizar estado (usado por admin)
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<Void> cambiarEstado(@PathVariable String id, @RequestBody EstadoRequest body) {
+        proyectoService.cambiarEstado(id, body.getEstado());
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<ProyectoModel> actualizarProyecto(@PathVariable String id,
-                                                            @RequestBody ActualizarProyectoDTO actualizarProyectoDTO) {
-        ProyectoModel proyectoModel = proyectoService.actualizarProyecto(id, actualizarProyectoDTO);
-        return ResponseEntity.ok(proyectoModel);
-    }
-
-    @PutMapping("/cambiar-estado/{id}")
-    public ResponseEntity<ProyectoModel> cambiarEstado(@PathVariable String id,
-                                                       @RequestBody CambioDeEstadoModel cambioDeEstadoModel){
-        ProyectoModel proyectoModel = proyectoService.cambiarEstado(id, cambioDeEstadoModel);
-        return ResponseEntity.ok(proyectoModel);
+    // Clase interna simple para recibir { "estado": "Terminado" }
+    public static class EstadoRequest {
+        private String estado;
+        public String getEstado() { return estado; }
+        public void setEstado(String estado) { this.estado = estado; }
     }
 }

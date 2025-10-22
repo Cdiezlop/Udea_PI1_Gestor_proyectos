@@ -7,6 +7,9 @@ COPY . .
 # Construir proyecto
 RUN gradle clean build -x test
 
+# Dar permisos al gradlew
+RUN chmod +x ./gradlew
+
 # Imagen final
 FROM openjdk:17-jdk-slim
 WORKDIR /app
