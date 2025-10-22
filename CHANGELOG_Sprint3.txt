@@ -1,0 +1,18 @@
+CHANGELOG - Sprint 3 Validated
+
+Backend:
+- Añadidos campos en Proyecto: fechaCompromiso, fechaPrimerAvance, fechaRegistro (LocalDate).
+- CrearProyectoDTO con validaciones (jakarta.validation): @NotBlank, @NotNull, @FutureOrPresent, @PositiveOrZero.
+- ProyectoServiceImpl: mapeo DTO -> entidad -> save, asigna fechaRegistro = LocalDate.now(), estado por defecto "Por revisar".
+- Controller: endpoints compatibles con /gestor/api/proyectos, agregado endpoint PUT /{id}/estado para admin.
+
+Frontend:
+- CrearProyecto.js: inputs tipo date, validaciones cliente (fechas >= hoy, presupuesto positivo).
+- DetalleProyectoAdmin.js: select de estados visible solo para admin, PUT para cambiar estado.
+
+Scripts:
+- estados.mongodb actualizado con 7 estados únicos.
+
+Notas:
+- Formato de fecha: yyyy-MM-dd (input type="date").
+- Backend devuelve fechas formateadas con pattern yyyy-MM-dd.
