@@ -1,9 +1,11 @@
+db = db.getSiblingDB('gestor_db'); // Selecciona o crea la base de datos
+
 db.estado.insertMany([
-  { _id: "1", name: "Por revisar" },
-  { _id: "2", name: "Aceptado" },
-  { _id: "3", name: "En ejecución" },
-  { _id: "4", name: "Rechazado" },
-  { _id: "5", name: "Atrasado" },
-  { _id: "6", name: "Terminado" },
-  { _id: "7", name: "Aplazado" }
+  { nombre: "Por revisar" },
+  { nombre: "Aceptado" },
+  { nombre: "En ejecución" },
+  { nombre: "Rechazado" },
+  { nombre: "Atrasado" },
+  { nombre: "Terminado" },
+  { nombre: "Aplazado" }
 ]);
