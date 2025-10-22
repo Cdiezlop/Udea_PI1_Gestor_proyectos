@@ -6,121 +6,111 @@ import {
 } from "../services/crear-proyectosService"; // Importamos los servicios
 import "../styles/CrearProyecto.css"; // Importamos los estilos
 
-function CrearProyecto() {
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [categoria, setCategoria] = useState("");
+export default function CrearProyecto() {
+  const [nombre, setNombre] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [categoria, setCategoria] = useState('');
   const [categorias, setCategorias] = useState([]);
-  const [userId, setUserId] = useState(""); // Captura el userId
+  const [presupuesto, setPresupuesto] = useState('');
+  const [fechaCompromiso, setFechaCompromiso] = useState('');
+  const [fechaPrimerAvance, setFechaPrimerAvance] = useState('');
+  const [userId, setUserId] = useState(''); // se asume proviene del login
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loggedUserId = localStorage.getItem("userId");
-    if (loggedUserId) {
-      setUserId(loggedUserId);
-    }
+    // Buscar categorías si el endpoint existe
+    fetch(`${API_BASE}/categorias/listar`)
+      .then(r => r.json())
+      .then(data => setCategorias(data))
+      .catch(()=>{ /* silencioso si no existe */ });
 
-    const loadCategorias = async () => {
-      try {
-        const data = await fetchCategoriasService();
-        setCategorias(data);
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-    loadCategorias();
+    const uid = localStorage.getItem('userId');
+    if(uid) setUserId(uid);
   }, []);
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    // Validaciones cliente
+    const today = new Date().toISOString().split('T')[0];
+    if (!nombre || !descripcion || !categoria || !presupuesto || !fechaCompromiso || !fechaPrimerAvance) {
+      alert('Complete todos los campos obligatorios.');
+      return;
+    }
+    if (fechaCompromiso < today) {
+      alert('La fecha de compromiso no puede ser anterior a hoy.');
+      return;
+    }
+    if (fechaPrimerAvance < today) {
+      alert('La fecha del primer avance no puede ser anterior a hoy.');
+      return;
+    }
+    if (Number(presupuesto) < 0 || isNaN(Number(presupuesto))) {
+      alert('El presupuesto debe ser un número positivo.');
+      return;
+    }
 
-    const proyecto = { nombre, descripcion, categoria, userId };
+    const proyecto = {
+      nombre,
+      descripcion,
+      categoria,
+      userId,
+      presupuesto: Number(presupuesto),
+      fechaCompromiso,
+      fechaPrimerAvance
+    };
 
     try {
-      const success = await crearProyectoService(proyecto);
-      if (success) {
-        alert("Proyecto creado con éxito");
-        navigate("/proyectos");
-      } else {
-        alert("Error al crear el proyecto");
+      const res = await fetch(`${API_BASE}/proyectos/crear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(proyecto)
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Error al crear proyecto');
       }
-    } catch (error) {
-      console.error(error.message);
+      alert('Proyecto creado correctamente.');
+      navigate('/proyectos');
+    } catch (err) {
+      alert('Error: ' + err.message);
     }
   };
 
   return (
-    <div className="container mt-5 p-4 bg-light rounded shadow">
-      <h2 className="text-center mb-4">Información del nuevo proyecto</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group mb-4">
-          <label htmlFor="nombre">Título del proyecto</label>
-          <input
-            type="text"
-            className="form-control"
-            id="nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            placeholder="Escribe el título del proyecto"
-            required
-          />
+    <div className="crear-proyecto">
+      <h2>Crear Proyecto</h2>
+      <form onSubmit={submit}>
+        <div className="form-group">
+          <label>Nombre</label>
+          <input type="text" value={nombre} onChange={e=>setNombre(e.target.value)} required />
         </div>
-        <div className="form-group mb-4">
-          <label htmlFor="categoria">Categoría</label>
-          <select
-            className="form-control custom-control"
-            id="categoria"
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-            required
-          >
-            <option value="">Seleccione una categoría</option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.nombre}
-              </option>
-            ))}
+        <div className="form-group">
+          <label>Descripción</label>
+          <textarea value={descripcion} onChange={e=>setDescripcion(e.target.value)} required />
+        </div>
+        <div className="form-group">
+          <label>Categoría</label>
+          <select value={categoria} onChange={e=>setCategoria(e.target.value)} required>
+            <option value="">-- Seleccione --</option>
+            {categorias.map(c => <option key={c._id || c.id} value={c.name || c.nombre}>{c.name || c.nombre}</option>)}
           </select>
         </div>
-        <div className="form-group mb-4">
-          <label htmlFor="userId">ID del usuario</label>
-          <input
-            type="text"
-            className="form-control custom-control"
-            id="userId"
-            value={userId}
-            disabled
-          />
+        <div className="form-group">
+          <label>Presupuesto</label>
+          <input type="number" min="0" step="0.01" value={presupuesto} onChange={e=>setPresupuesto(e.target.value)} required />
         </div>
-        <div className="form-group mb-5">
-          <label htmlFor="descripcion">Descripción</label>
-          <textarea
-            className="form-control"
-            id="descripcion"
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            rows="4"
-            placeholder="Describe el proyecto"
-            required
-          ></textarea>
+        <div className="form-group">
+          <label>Fecha compromiso</label>
+          <input type="date" value={fechaCompromiso} onChange={e=>setFechaCompromiso(e.target.value)} required />
         </div>
-        <div className="d-flex justify-content-center">
-          <button type="submit" className="btn btn-primary crear-btn">
-            Crear
-          </button>
+        <div className="form-group">
+          <label>Fecha primer avance</label>
+          <input type="date" value={fechaPrimerAvance} onChange={e=>setFechaPrimerAvance(e.target.value)} required />
         </div>
-        <div className="text-center mt-4">
-        <button
-          className="btn btn-primary volver-lista"
-          onClick={() => navigate("/proyectos")}
-        >
-          Volver a la lista
-        </button>
-      </div>
+        <div className="text-center">
+          <button type="submit" className="btn btn-primary">Crear</button>
+        </div>
       </form>
     </div>
   );
 }
-
-export default CrearProyecto;
