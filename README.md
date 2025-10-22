@@ -43,7 +43,7 @@ Se requiere tener instalado:
 
 Instalación recomendada en Ubuntu/Lubuntu:
 
-```bash
+
 sudo apt update
 sudo apt install openjdk-17-jdk nodejs npm mongodb -y
 
@@ -132,6 +132,7 @@ Si deseas reiniciar la base de datos y recargar los estados iniciales, usa:
 ```bash
 docker compose down -v
 docker compose up --build
+```
 
 ------------------------------------------------------------------
 Diagrama de arquitectura (simplificado)
@@ -175,10 +176,11 @@ Backend
 ```bash
 cd backend/Gestor-De-Proyectos-develop
 ./gradlew test
+```
 
 Frontend
 --------
-```bash
+
 cd frontend/frontend-gestorProyectos-develop
 npm test
 
@@ -192,6 +194,7 @@ git clone https://github.com/Cdiezlop/Udea_PI1_Gestor_proyectos.git "GESTOR_DE_P
 cd "GESTOR_DE_PROYECTOS"
 chmod +x backend/Gestor-De-Proyectos-develop/gradlew
 docker compose up --build
+```
 
 ------------------------------------------------------------------
 Autores
