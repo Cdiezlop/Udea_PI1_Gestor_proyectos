@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 # Construir proyecto
-RUN gradle clean build -x test
+RUN chmod +x gradlew && ./gradlew clean build -x test
 
 # Dar permisos al gradlew
 RUN chmod +x ./gradlew
