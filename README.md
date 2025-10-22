@@ -59,11 +59,47 @@ mongod --version
 
 Opción 3: Ejecución con Docker (Windows o Linux)
 ------------------------------
-Se requiere tener instalado:
+El backend del proyecto requiere Java 17 para compilar correctamente con Gradle.
+Si tienes instalada una versión superior (por ejemplo Java 21), debes instalar también
+Java 17 y configurar el sistema para usarla temporalmente durante la compilación.
 
-- Docker (o Docker Desktop en Windows con WSL2)
-- Docker Compose
-- Git (opcional, solo si se clona el repositorio)
+1. Instalar Java 17:
+
+   sudo apt update
+   sudo apt install openjdk-17-jdk -y
+
+2. Verificar instalación:
+
+   java -version
+   javac -version
+
+   Debe mostrar una versión similar a:
+   openjdk version "17.0.xx"
+
+3. Seleccionar Java 17 como versión activa del sistema:
+
+   sudo update-alternatives --config java
+
+   (Seleccionar la opción correspondiente a Java 17)
+
+4. Confirmar el cambio:
+
+   java -version
+
+   Si muestra Java 17, continuar con la compilación.
+
+5. Ejecutar la compilación del backend:
+
+   cd ~/Desktop/GESTOR_DE_PROYECTOS/backend/Gestor-De-Proyectos-develop
+   chmod +x gradlew
+   ./gradlew clean build -x test
+
+   Si la compilación finaliza con "BUILD SUCCESSFUL", el backend está listo.
+
+6. (Opcional) Si deseas volver a usar Java 21:
+
+   sudo update-alternatives --config java
+   (Seleccionar la versión 21 nuevamente)
 
 ------------------------------------------------------------------
 Ejecución del proyecto
