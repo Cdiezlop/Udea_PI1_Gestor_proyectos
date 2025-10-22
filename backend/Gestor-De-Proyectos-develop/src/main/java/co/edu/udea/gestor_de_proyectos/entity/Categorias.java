@@ -2,6 +2,7 @@ package co.edu.udea.gestor_de_proyectos.entity;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDate;
 
 /**
  * @author Tgl. Jhoan Villa.

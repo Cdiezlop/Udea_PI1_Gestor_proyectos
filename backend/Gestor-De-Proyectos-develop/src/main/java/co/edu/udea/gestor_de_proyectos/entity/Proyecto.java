@@ -15,7 +15,6 @@ import java.util.List;
  * @version Id: <b>gestor-de-proyectos</b> 21/10/2025, 10:16 a. m.
  **/
 @Data
-@Document("proyecto")
 @Document(collection = "proyectos")
 
 /**
