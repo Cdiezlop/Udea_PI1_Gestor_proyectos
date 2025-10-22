@@ -39,9 +39,9 @@ Se requiere tener instalado:
 - npm 9.x  
 - MongoDB Community 6.x  
 
+
+
 Instalación recomendada en Ubuntu/Lubuntu:
-
-
 
 ```bash
 sudo apt update
