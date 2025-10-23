@@ -24,6 +24,13 @@ import java.util.stream.Collectors;
  * - Asigna fechaRegistro = LocalDate.now()
  * - Estado inicial: "Por revisar"
  */
+
+/**
+ * Implementación del servicio de proyectos.
+ * Maneja la lógica de negocio para CRUD y cambios de estado.
+ */
+
+
 @Service
 @RequiredArgsConstructor
 public class ProyectoServiceImpl implements ProyectoService {
@@ -32,8 +39,10 @@ public class ProyectoServiceImpl implements ProyectoService {
 
     @Override
     public Proyecto crearProyecto(Proyecto proyecto) {
+        proyecto.setId(UUID.randomUUID().toString());
         proyecto.setFechaCreacion(LocalDate.now());
         proyecto.setFechaRegistro(LocalDate.now());
+        proyecto.setEstado("Por revisar");
         return proyectoRepository.save(proyecto);
     }
 

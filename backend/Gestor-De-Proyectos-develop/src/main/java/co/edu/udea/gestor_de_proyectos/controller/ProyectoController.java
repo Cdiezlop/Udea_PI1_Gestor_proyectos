@@ -12,67 +12,65 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+
 /**
- * @author Tgl. Jhoan Villa y Cristian Diez
- * @version Id: <b>gestor-de-proyectos</b> 22/10/2025
- **/
-@Service
+ * Controlador REST para gestión de proyectos
+ * Permite crear, listar, actualizar, eliminar y cambiar estado de proyectos.
+ */
+@RestController
+@RequestMapping("/api/proyectos")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
-public class ProyectoServiceImpl implements ProyectoService {
+public class ProyectoController {
 
-    private final ProyectoRepository proyectoRepository;
+    private final ProyectoService proyectoService;
 
-    @Override
-    public Proyecto crearProyecto(Proyecto proyecto) {
-        proyecto.setFechaCreacion(LocalDate.now());
-        proyecto.setFechaRegistro(LocalDate.now());
-        return proyectoRepository.save(proyecto);
+    @PostMapping("/crear")
+    public ResponseEntity<Proyecto> crearProyecto(@Valid @RequestBody Proyecto proyecto) {
+        Proyecto nuevo = proyectoService.crearProyecto(proyecto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
-    @Override
-    public Proyecto obtenerProyectoPorId(String id) {
-        return proyectoRepository.findById(id).orElse(null);
+    @GetMapping("/listar")
+    public ResponseEntity<List<Proyecto>> listarProyectos() {
+        return ResponseEntity.ok(proyectoService.listarProyectos());
     }
 
-    @Override
-    public List<Proyecto> listarProyectos() {
-        return proyectoRepository.findAll();
-    }
-
-    @Override
-    public Proyecto actualizarProyecto(String id, Proyecto proyecto) {
-        Optional<Proyecto> proyectoExistente = proyectoRepository.findById(id);
-        if (proyectoExistente.isPresent()) {
-            Proyecto actualizado = proyectoExistente.get();
-            actualizado.setNombre(proyecto.getNombre());
-            actualizado.setDescripcion(proyecto.getDescripcion());
-            actualizado.setPresupuesto(proyecto.getPresupuesto());
-            actualizado.setCategoria(proyecto.getCategoria());
-            actualizado.setFechaModificacion(LocalDate.now());
-            return proyectoRepository.save(actualizado);
+    @GetMapping("/{id}")
+    public ResponseEntity<Proyecto> obtenerProyecto(@PathVariable String id) {
+        Proyecto proyecto = proyectoService.obtenerProyectoPorId(id);
+        if (proyecto == null) {
+            return ResponseEntity.notFound().build();
         }
-        return null;
+        return ResponseEntity.ok(proyecto);
     }
 
-    @Override
-    public void eliminarProyecto(String id) {
-        proyectoRepository.deleteById(id);
-    }
-
-    @Override
-    public Proyecto cambiarEstado(String id, CambioDeEstadoModel cambioDeEstado) {
-        Optional<Proyecto> optionalProyecto = proyectoRepository.findById(id);
-        if (optionalProyecto.isPresent()) {
-            Proyecto proyecto = optionalProyecto.get();
-            proyecto.setEstado(cambioDeEstado.getEstado());
-            proyecto.setFechaModificacion(LocalDate.now());
-            return proyectoRepository.save(proyecto);
+    @PutMapping("/{id}")
+    public ResponseEntity<Proyecto> actualizarProyecto(@PathVariable String id, @RequestBody Proyecto proyecto) {
+        Proyecto actualizado = proyectoService.actualizarProyecto(id, proyecto);
+        if (actualizado == null) {
+            return ResponseEntity.notFound().build();
         }
-        return null;
+        return ResponseEntity.ok(actualizado);
     }
 
-    @Override
-    public List<Proyecto> listarProyectosPorUsuario(String userId) {
-        return proyectoRepository.findAllByUserId(userId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarProyecto(@PathVariable String id) {
+        proyectoService.eliminarProyecto(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<Proyecto> cambiarEstado(@PathVariable String id, @RequestBody CambioDeEstadoModel cambio) {
+        Proyecto actualizado = proyectoService.cambiarEstado(id, cambio);
+        if (actualizado == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(actualizado);
+    }
+
+    @GetMapping("/usuario/{userId}")
+    public ResponseEntity<List<Proyecto>> listarPorUsuario(@PathVariable String userId) {
+        return ResponseEntity.ok(proyectoService.listarProyectosPorUsuario(userId));
     }
 }
