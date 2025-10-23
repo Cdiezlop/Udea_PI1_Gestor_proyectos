@@ -2,11 +2,13 @@ server:
   port: 8088
   servlet:
     context-path: /gestor
+
 spring:
-  servlet:
   data:
     mongodb:
       uri: mongodb://localhost:27017/GestorProyectos
-  jpa:
-    hibernate:
-      ddl-auto: update
+
+# Logs y configuración adicional
+logging:
+  level:
+    org.springframework: INFO
