@@ -1,60 +1,78 @@
 package co.edu.udea.gestor_de_proyectos.controller;
 
-import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
 import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import jakarta.validation.Valid;
 
 import java.util.List;
 
 /**
- * @author Tgl. Jhoan Villa y cristian diez
- * Email: jhoan.villa  y cristian diez
- * @version Id: <b>gestor-de-proyectos</b> 01/09/2025, 10:33 a. m.
+ * @author Tgl. Jhoan Villa y Cristian Diez
+ * @version Id: <b>gestor-de-proyectos</b> 22/10/2025
  **/
-@RestController
-@RequestMapping("/api/proyectos")
-@CrossOrigin(origins = "*") // Permitir solicitudes de cualquier origen
+@Service
 @RequiredArgsConstructor
-public class ProyectoController {
+public class ProyectoServiceImpl implements ProyectoService {
 
-    private final ProyectoService proyectoService;
+    private final ProyectoRepository proyectoRepository;
 
-    @PostMapping("/crear")
-    public ResponseEntity<ProyectoModel> crearProyecto(@Valid @RequestBody CrearProyectoDTO crearProyectoDTO) {
-        ProyectoModel proyectoModel = proyectoService.crearProyecto(crearProyectoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoModel);
+    @Override
+    public Proyecto crearProyecto(Proyecto proyecto) {
+        proyecto.setFechaCreacion(LocalDate.now());
+        proyecto.setFechaRegistro(LocalDate.now());
+        return proyectoRepository.save(proyecto);
     }
 
-    @GetMapping("/listar")
-    public ResponseEntity<List<ProyectoModel>> listar() {
-        return ResponseEntity.ok(proyectoService.listarProyectos());
+    @Override
+    public Proyecto obtenerProyectoPorId(String id) {
+        return proyectoRepository.findById(id).orElse(null);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProyectoModel> obtener(@PathVariable String id) {
-        return ResponseEntity.ok(proyectoService.proyectoPorId(id));
+    @Override
+    public List<Proyecto> listarProyectos() {
+        return proyectoRepository.findAll();
     }
 
-    // Endpoint para actualizar estado (usado por admin)
-    @PutMapping("/{id}/estado")
-    public ResponseEntity<Void> cambiarEstado(@PathVariable String id, @RequestBody EstadoRequest body) {
-        proyectoService.cambiarEstado(id, body.getEstado());
-        return ResponseEntity.ok().build();
+    @Override
+    public Proyecto actualizarProyecto(String id, Proyecto proyecto) {
+        Optional<Proyecto> proyectoExistente = proyectoRepository.findById(id);
+        if (proyectoExistente.isPresent()) {
+            Proyecto actualizado = proyectoExistente.get();
+            actualizado.setNombre(proyecto.getNombre());
+            actualizado.setDescripcion(proyecto.getDescripcion());
+            actualizado.setPresupuesto(proyecto.getPresupuesto());
+            actualizado.setCategoria(proyecto.getCategoria());
+            actualizado.setFechaModificacion(LocalDate.now());
+            return proyectoRepository.save(actualizado);
+        }
+        return null;
     }
 
-    // Clase interna simple para recibir { "estado": "Terminado" }
-    public static class EstadoRequest {
-        private String estado;
-        public String getEstado() { return estado; }
-        public void setEstado(String estado) { this.estado = estado; }
+    @Override
+    public void eliminarProyecto(String id) {
+        proyectoRepository.deleteById(id);
+    }
+
+    @Override
+    public Proyecto cambiarEstado(String id, CambioDeEstadoModel cambioDeEstado) {
+        Optional<Proyecto> optionalProyecto = proyectoRepository.findById(id);
+        if (optionalProyecto.isPresent()) {
+            Proyecto proyecto = optionalProyecto.get();
+            proyecto.setEstado(cambioDeEstado.getEstado());
+            proyecto.setFechaModificacion(LocalDate.now());
+            return proyectoRepository.save(proyecto);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Proyecto> listarProyectosPorUsuario(String userId) {
+        return proyectoRepository.findAllByUserId(userId);
     }
 }

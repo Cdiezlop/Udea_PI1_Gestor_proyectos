@@ -1,31 +1,20 @@
 package co.edu.udea.gestor_de_proyectos.service;
 
-import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
-import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
+import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
-import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-/**
- * @author Tgl. Jhoan Villa.
- * Email: jhoan.villa
- * @version Id: <b>gestor-de-proyectos</b> 30/08/2025, 10:29 a. m.
- **/
 public interface ProyectoService {
+    Proyecto crearProyecto(Proyecto proyecto);
+    Proyecto obtenerProyectoPorId(String id);
+    List<Proyecto> listarProyectos();
+    Proyecto actualizarProyecto(String id, Proyecto proyecto);
+    void eliminarProyecto(String id);
 
-    ProyectoModel crearProyecto (CrearProyectoDTO crearProyectoDTO);
+    // Método corregido
+    Proyecto cambiarEstado(String id, CambioDeEstadoModel cambioDeEstado);
 
-    Page<ProyectoModel> proyectosPaginados (int page, int size);
-
-    ProyectoModel actualizarProyecto (String id, ActualizarProyectoDTO actualizarProyectoDTO);
-
-    List<ProyectoModel> listarProyectos ();
-
-    ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel);
-
-    ProyectoModel proyectoPorId(String proyectoId);
-
-    List<ProyectoModel> listarProyectosPorUsuario(String userId);
+    // Método agregado con firma correcta
+    List<Proyecto> listarProyectosPorUsuario(String userId);
 }
