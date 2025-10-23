@@ -58,17 +58,16 @@ public class ProyectoServiceImpl implements ProyectoService {
 
     @Override
     public Proyecto actualizarProyecto(String id, Proyecto proyecto) {
-        Optional<Proyecto> proyectoExistente = proyectoRepository.findById(id);
-        if (proyectoExistente.isPresent()) {
-            Proyecto actualizado = proyectoExistente.get();
-            actualizado.setNombre(proyecto.getNombre());
-            actualizado.setDescripcion(proyecto.getDescripcion());
-            actualizado.setPresupuesto(proyecto.getPresupuesto());
-            actualizado.setCategoria(proyecto.getCategoria());
-            actualizado.setFechaModificacion(LocalDate.now());
-            return proyectoRepository.save(actualizado);
-        }
-        return null;
+        return proyectoRepository.findById(id)
+            .map(actualizado -> {
+                actualizado.setNombre(proyecto.getNombre());
+                actualizado.setDescripcion(proyecto.getDescripcion());
+                actualizado.setPresupuesto(proyecto.getPresupuesto());
+                actualizado.setCategoria(proyecto.getCategoria());
+                actualizado.setFechaModificacion(LocalDate.now());
+                return proyectoRepository.save(actualizado);
+            })
+            .orElse(null);
     }
 
     @Override
