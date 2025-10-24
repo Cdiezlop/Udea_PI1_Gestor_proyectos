@@ -1,9 +1,4 @@
-version: "3.9"
-
 services:
-  # =======================
-  # Base de datos MongoDB
-  # =======================
   mongo:
     image: mongo:6.0
     container_name: gestor_mongo
@@ -15,9 +10,6 @@ services:
       - ./backend/Gestor-De-Proyectos-develop/scripts:/docker-entrypoint-initdb.d
     command: mongod --bind_ip_all
 
-  # =======================
-  # Backend - Spring Boot
-  # =======================
   backend:
     build: ./backend/Gestor-De-Proyectos-develop
     container_name: gestor_backend
@@ -28,11 +20,8 @@ services:
       - mongo
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/gestor_db
-    command: ["./gradlew", "bootRun"]
+    command: ["java", "-jar", "app.jar"]
 
-  # =======================
-  # Frontend - React
-  # =======================
   frontend:
     build: ./frontend/frontend-gestorProyectos-develop
     container_name: gestor_frontend

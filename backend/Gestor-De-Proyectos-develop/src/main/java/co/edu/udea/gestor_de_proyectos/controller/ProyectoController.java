@@ -1,15 +1,14 @@
 package co.edu.udea.gestor_de_proyectos.controller;
 
-import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
+
+import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
-import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
 import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
 import java.util.List;
 
 

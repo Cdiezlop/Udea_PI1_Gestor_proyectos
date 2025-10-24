@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { cambiarEstadoProyectoService } from "../services/cambiarEstadoProyectoService"; // Importar el servicio
-import "../styles/DetalleProyectoAdmin.css"; // Estilos para esta vista
+import { API_BASE } from "../config";
+import "../styles/DetalleProyectoAdmin.css";
 
 export default function DetalleProyectoAdmin() {
   const { id } = useParams();
@@ -13,7 +13,7 @@ export default function DetalleProyectoAdmin() {
     fetch(`${API_BASE}/proyectos/${id}`)
       .then(r => r.json())
       .then(data => { setProyecto(data); setEstado(data.estado); })
-      .catch(()=>{});
+      .catch(console.error);
   }, [id]);
 
   const isAdmin = localStorage.getItem('role') === 'admin';
@@ -23,7 +23,7 @@ export default function DetalleProyectoAdmin() {
       const res = await fetch(`${API_BASE}/proyectos/${id}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado })
+        body: JSON.stringify({ estado }),
       });
       if (!res.ok) throw new Error('No se pudo actualizar el estado');
       alert('Estado actualizado');
@@ -33,10 +33,10 @@ export default function DetalleProyectoAdmin() {
     }
   };
 
-  if (!proyecto) return <div>Cargando...</div>;
+  if (!proyecto) return <div className="loading">Cargando...</div>;
 
   return (
-    <div>
+    <div className="detalle-proyecto">
       <h2>Detalle del proyecto</h2>
       <p><strong>Nombre:</strong> {proyecto.nombre}</p>
       <p><strong>Descripción:</strong> {proyecto.descripcion}</p>
@@ -46,7 +46,7 @@ export default function DetalleProyectoAdmin() {
       <p><strong>Estado:</strong> {proyecto.estado}</p>
 
       {isAdmin && (
-        <div>
+        <div className="admin-panel">
           <label>Cambiar estado</label>
           <select value={estado} onChange={e => setEstado(e.target.value)}>
             <option>Por revisar</option>
