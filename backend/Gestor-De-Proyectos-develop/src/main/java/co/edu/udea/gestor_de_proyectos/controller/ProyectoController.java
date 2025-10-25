@@ -2,9 +2,13 @@ package co.edu.udea.gestor_de_proyectos.controller;
 
 
 import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
+import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
+import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
 import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,51 +29,47 @@ public class ProyectoController {
     private final ProyectoService proyectoService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Proyecto> crearProyecto(@Valid @RequestBody Proyecto proyecto) {
-        Proyecto nuevo = proyectoService.crearProyecto(proyecto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
-    }
-
-    @GetMapping("/listar")
-    public ResponseEntity<List<Proyecto>> listarProyectos() {
-        return ResponseEntity.ok(proyectoService.listarProyectos());
+    public ResponseEntity<ProyectoModel> crearProyecto(@RequestBody CrearProyectoDTO crearProyectoDTO) {
+        ProyectoModel proyectoModel = proyectoService.crearProyecto(crearProyectoDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoModel);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Proyecto> obtenerProyecto(@PathVariable String id) {
-        Proyecto proyecto = proyectoService.obtenerProyectoPorId(id);
-        if (proyecto == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(proyecto);
+    public ResponseEntity<ProyectoModel> obtenerProyectoPorId(@PathVariable String id) {
+        ProyectoModel proyectoModel = proyectoService.proyectoPorId(id);
+        return ResponseEntity.ok(proyectoModel);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Proyecto> actualizarProyecto(@PathVariable String id, @RequestBody Proyecto proyecto) {
-        Proyecto actualizado = proyectoService.actualizarProyecto(id, proyecto);
-        if (actualizado == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(actualizado);
+    @GetMapping("/listar")
+    public ResponseEntity<List<ProyectoModel>> listarProyectos() {
+        List<ProyectoModel> proyectos = proyectoService.listarProyectos();
+        return ResponseEntity.ok(proyectos);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarProyecto(@PathVariable String id) {
-        proyectoService.eliminarProyecto(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/listar/{userId}")
+    public ResponseEntity<List<ProyectoModel>> listarProyectosPorUsuario(@PathVariable String userId) {
+        List<ProyectoModel> proyectos = proyectoService.listarProyectosPorUsuario(userId);
+        return ResponseEntity.ok(proyectos);
     }
 
-    @PutMapping("/{id}/estado")
-    public ResponseEntity<Proyecto> cambiarEstado(@PathVariable String id, @RequestBody CambioDeEstadoModel cambio) {
-        Proyecto actualizado = proyectoService.cambiarEstado(id, cambio);
-        if (actualizado == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(actualizado);
+    @GetMapping("/pagina/{page}/{size}")
+    public ResponseEntity<Page<ProyectoModel>> listarProyectos(@PathVariable int page, @PathVariable int size) {
+        Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size);
+        return ResponseEntity.ok(proyectos);
     }
 
-    @GetMapping("/usuario/{userId}")
-    public ResponseEntity<List<Proyecto>> listarPorUsuario(@PathVariable String userId) {
-        return ResponseEntity.ok(proyectoService.listarProyectosPorUsuario(userId));
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<ProyectoModel> actualizarProyecto(@PathVariable String id,
+                                                            @RequestBody ActualizarProyectoDTO actualizarProyectoDTO) {
+        ProyectoModel proyectoModel = proyectoService.actualizarProyecto(id, actualizarProyectoDTO);
+        return ResponseEntity.ok(proyectoModel);
+    }
+
+    @PutMapping("/cambiar-estado/{id}")
+    public ResponseEntity<ProyectoModel> cambiarEstado(@PathVariable String id,
+                                                       @RequestBody CambioDeEstadoModel cambioDeEstadoModel){
+        ProyectoModel proyectoModel = proyectoService.cambiarEstado(id, cambioDeEstadoModel);
+        return ResponseEntity.ok(proyectoModel);
     }
 }
+

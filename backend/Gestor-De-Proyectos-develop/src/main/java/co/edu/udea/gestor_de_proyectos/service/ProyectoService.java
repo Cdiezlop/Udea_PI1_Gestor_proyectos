@@ -1,7 +1,10 @@
 package co.edu.udea.gestor_de_proyectos.service;
 
-import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
+import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
+import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -11,17 +14,17 @@ import java.util.List;
  */
 public interface ProyectoService {
 
-    Proyecto crearProyecto(Proyecto proyecto);
+    ProyectoModel crearProyecto (CrearProyectoDTO crearProyectoDTO);
 
-    Proyecto obtenerProyectoPorId(String id);
+    Page<ProyectoModel> proyectosPaginados (int page, int size);
 
-    List<Proyecto> listarProyectos();
+    ProyectoModel actualizarProyecto (String id, ActualizarProyectoDTO actualizarProyectoDTO);
 
-    Proyecto actualizarProyecto(String id, Proyecto proyecto);
+    List<ProyectoModel> listarProyectos ();
 
-    void eliminarProyecto(String id);
+    ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel);
 
-    Proyecto cambiarEstado(String id, CambioDeEstadoModel cambioDeEstado);
+    ProyectoModel proyectoPorId(String proyectoId);
 
-    List<Proyecto> listarProyectosPorUsuario(String userId);
+    List<ProyectoModel> listarProyectosPorUsuario(String userId);
 }

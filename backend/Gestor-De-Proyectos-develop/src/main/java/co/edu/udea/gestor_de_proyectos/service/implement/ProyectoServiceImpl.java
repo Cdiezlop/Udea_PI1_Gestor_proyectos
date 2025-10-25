@@ -1,94 +1,160 @@
 package co.edu.udea.gestor_de_proyectos.service.implement;
 
+import co.edu.udea.gestor_de_proyectos.entity.Compromisos;
 import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
+import co.edu.udea.gestor_de_proyectos.model.comentarios.ComentariosModel;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.ComentariosDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.CrearCompromisoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
+import co.edu.udea.gestor_de_proyectos.repository.CompromisosRepository;
 import co.edu.udea.gestor_de_proyectos.repository.ProyectoRepository;
+import co.edu.udea.gestor_de_proyectos.service.FechaActualService;
 import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementación del servicio de proyectos.
- * - Mapea CrearProyectoDTO -> Proyecto -> ProyectoModel
- * - Asigna fechaRegistro = LocalDate.now()
- * - Estado inicial: "Por revisar"
- */
-
-/**
- * Implementación del servicio de proyectos.
- * Maneja la lógica de negocio para CRUD y cambios de estado.
- */
-
-
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
+    private final CompromisosRepository compromisosRepository;
+    private final FechaActualService fechaActual;
 
     @Override
-    public Proyecto crearProyecto(Proyecto proyecto) {
-        proyecto.setId(UUID.randomUUID().toString());
-        proyecto.setFechaCreacion(LocalDate.now());
-        proyecto.setFechaRegistro(LocalDate.now());
+    public ProyectoModel crearProyecto(CrearProyectoDTO crearProyectoDTO) {
+        Proyecto proyecto = new Proyecto();
+        proyecto.setId(generateId(null));
+        proyecto.setNombre(crearProyectoDTO.getNombre());
+        proyecto.setDescripcion(crearProyectoDTO.getDescripcion());
+        proyecto.setUserId(crearProyectoDTO.getUserId());
+        proyecto.setCategoria(crearProyectoDTO.getCategoria());
+        proyecto.setPresupuesto(crearProyectoDTO.getPresupuesto());
+        proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
+        proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
+        proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
+        proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaFinalizacion().toLocalDate());
         proyecto.setEstado("Por revisar");
-        return proyectoRepository.save(proyecto);
-    }
 
-    @Override
-    public Proyecto obtenerProyectoPorId(String id) {
-        return proyectoRepository.findById(id).orElse(null);
-    }
+        List<String> compromisosIds = new ArrayList<>();
 
-    @Override
-    public List<Proyecto> listarProyectos() {
-        return proyectoRepository.findAll();
-    }
-
-    @Override
-    public Proyecto actualizarProyecto(String id, Proyecto proyecto) {
-        return proyectoRepository.findById(id)
-            .map(actualizado -> {
-                actualizado.setNombre(proyecto.getNombre());
-                actualizado.setDescripcion(proyecto.getDescripcion());
-                actualizado.setPresupuesto(proyecto.getPresupuesto());
-                actualizado.setCategoria(proyecto.getCategoria());
-                actualizado.setFechaModificacion(LocalDate.now());
-                return proyectoRepository.save(actualizado);
-            })
-            .orElse(null);
-    }
-
-    @Override
-    public void eliminarProyecto(String id) {
-        proyectoRepository.deleteById(id);
-    }
-
-    @Override
-    public Proyecto cambiarEstado(String id, CambioDeEstadoModel cambioDeEstado) {
-        Optional<Proyecto> optionalProyecto = proyectoRepository.findById(id);
-        if (optionalProyecto.isPresent()) {
-            Proyecto proyecto = optionalProyecto.get();
-            proyecto.setEstado(cambioDeEstado.getEstado());
-            proyecto.setFechaModificacion(LocalDate.now());
-            return proyectoRepository.save(proyecto);
+        if (crearProyectoDTO.getCompromisos() != null && !crearProyectoDTO.getCompromisos().isEmpty()) {
+            for (CrearCompromisoDTO compromisoDTO : crearProyectoDTO.getCompromisos()) {
+                Compromisos compromiso = new Compromisos();
+                compromiso.setId(generateId(null));
+                compromiso.setDescripcion(compromisoDTO.getDescripcion());
+                compromiso.setEstado(compromisoDTO.getEstado());
+                compromiso.setFechaEstimada(compromisoDTO.getFechaEstimada());
+                compromiso.setFechaReal(fechaActual.getCurrentDate());
+                Compromisos saved = compromisosRepository.save(compromiso);
+                compromisosIds.add(saved.getId());
+            }
         }
-        return null;
+
+        proyecto.setCompromisosId(compromisosIds);
+
+        Proyecto savedProyecto = proyectoRepository.save(proyecto);
+        log.info("Proyecto creado con ID: {}", savedProyecto.getId());
+        return mapToModel(savedProyecto);
     }
 
     @Override
-    public List<Proyecto> listarProyectosPorUsuario(String userId) {
-        return proyectoRepository.findAllByUserId(userId);
+    public List<ProyectoModel> listarProyectosPorUsuario(String userId) {
+        List<Proyecto> proyectos = proyectoRepository.findAllByUserId(userId);
+        return proyectos.stream().map(this::mapToModel).toList();
+    }
+
+    @Override
+    public ProyectoModel proyectoPorId(String proyectoId) {
+        Optional<Proyecto> proyectoOptional = proyectoRepository.findById(proyectoId);
+        Proyecto proyecto = proyectoOptional.orElseThrow(() ->
+                new RuntimeException("El proyecto con ID " + proyectoId + " no existe"));
+        return mapToModel(proyecto);
+    }
+
+    @Override
+    public Page<ProyectoModel> proyectosPaginados(int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<Proyecto> proyectosPage = proyectoRepository.findAll(pageable);
+        return proyectosPage.map(this::mapToModel);
+    }
+
+    @Override
+    public ProyectoModel actualizarProyecto(String id,  ActualizarProyectoDTO actualizarProyectoDTO) {
+        Proyecto proyecto = proyectoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
+        proyecto.setNombre(actualizarProyectoDTO.getNombre());
+        proyecto.setCategoria(actualizarProyectoDTO.getCategoria());
+        proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
+        proyecto.setEstado(actualizarProyectoDTO.getEstado());
+
+        Proyecto updatedProyecto = proyectoRepository.save(proyecto);
+        return mapToModel(updatedProyecto);
+    }
+
+    @Override
+    public List<ProyectoModel> listarProyectos() {
+        List<Proyecto> proyectos = proyectoRepository.findAll();
+        return proyectos.stream().map(this::mapToModel).toList();
+    }
+
+    @Override
+    public ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel) {
+        Proyecto proyecto = proyectoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
+
+        proyecto.setEstado(cambioDeEstadoModel.getEstado());
+
+        ComentariosDTO comentariosDTO = cambioDeEstadoModel.getComentarios();
+        ComentariosModel comentario = new ComentariosModel();
+        comentario.setUser(comentariosDTO.getUser());
+        comentario.setFechaComentarios(fechaActual.getCurrentDate());
+        comentario.setComentario(comentariosDTO.getComentario());
+
+        if ("Aceptado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
+            comentario.setTipoComentario("Proyecto aceptado");
+        } else {
+            comentario.setTipoComentario("Proyecto rechazado");
+        }
+        proyecto.setComentarios(comentario);
+        proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
+        Proyecto updatedProyecto = proyectoRepository.save(proyecto);
+        return mapToModel(updatedProyecto);
+    }
+
+    private ProyectoModel mapToModel(Proyecto proyecto) {
+        ProyectoModel model = new ProyectoModel();
+        model.setId(proyecto.getId());
+        model.setNombre(proyecto.getNombre());
+        model.setDescripcion(proyecto.getDescripcion());
+        model.setUserId(proyecto.getUserId());
+        model.setCategoria(proyecto.getCategoria());
+        model.setPresupuesto(proyecto.getPresupuesto());
+        model.setDirigidoa_a(proyecto.getDirigidoa_a());
+        model.setFechaCreacion(proyecto.getFechaCreacion());
+        model.setFechaModificacion(proyecto.getFechaModificacion());
+        model.setFechaFinalizacion(proyecto.getFechaFinalizacion());
+        model.setEstado(proyecto.getEstado());
+        model.setComentarios(proyecto.getComentarios());
+        model.setCompromisosId(proyecto.getCompromisosId());
+        return model;
+    }
+
+    private String generateId(String id) {
+        return (id == null) ? UUID.randomUUID().toString() : id;
     }
 }
