@@ -1,7 +1,7 @@
 import { API_BASE } from "../config";
 
 export const cambiarEstadoProyectoService = async (id, nuevoEstado) => {
-  const url = `${API_BASE}/proyectos/${id}/estado`;
+  const url = `${API_BASE}/proyectos/${id}/estado`; // Usa la variable importada
   try {
     const response = await fetch(url, {
       method: "PUT",

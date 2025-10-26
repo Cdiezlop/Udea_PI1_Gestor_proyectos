@@ -6,7 +6,7 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/GestorProyectos
+      uri: mongodb://localhost:27017/gestor_db
 
 # Logs y configuración adicional
 logging:
