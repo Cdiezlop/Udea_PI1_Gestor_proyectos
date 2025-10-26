@@ -4,18 +4,17 @@ import co.edu.udea.gestor_de_proyectos.model.dto.CambiarContrasenaDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.LoginUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearUsuarioDTO;
+import co.edu.udea.gestor_de_proyectos.model.response.ApiResponse;
 import co.edu.udea.gestor_de_proyectos.model.usuario.UsuarioModel;
 import co.edu.udea.gestor_de_proyectos.service.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Tgl. Jhoan Villa.
@@ -24,28 +23,45 @@ import java.util.Map;
  **/
 @RestController
 @RequestMapping("/api/usuario")
-@CrossOrigin(origins = "*") // Permitir solicitudes de cualquier origen
 @RequiredArgsConstructor
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
     @PostMapping("/crear")
-    public ResponseEntity<UsuarioModel> crearUsuario(@RequestBody CrearUsuarioDTO crearUsuarioDTO) {
-        UsuarioModel usuarioModel = usuarioService.crearUsuario(crearUsuarioDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioModel);
+    public ResponseEntity<ApiResponse<UsuarioModel>> crearUsuario(@Valid @RequestBody CrearUsuarioDTO crearUsuarioDTO) {
+        try {
+            UsuarioModel usuarioModel = usuarioService.crearUsuario(crearUsuarioDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(usuarioModel, "Usuario creado exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Error al crear usuario: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/pagina/{page}/{size}")
-    public ResponseEntity<Page<UsuarioModel>> listarUsuariosPaginados(@PathVariable int page, @PathVariable int size) {
-        Page<UsuarioModel> usuarios = usuarioService.usuariosPaginados(page, size);
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<ApiResponse<Page<UsuarioModel>>> listarUsuariosPaginados(
+            @PathVariable int page,
+            @PathVariable int size) {
+        try {
+            Page<UsuarioModel> usuarios = usuarioService.usuariosPaginados(page, size);
+            return ResponseEntity.ok(ApiResponse.success(usuarios));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al listar usuarios: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/listar")
-    public ResponseEntity<List<UsuarioModel>> listarUsuarios() {
-        List<UsuarioModel> usuarios = usuarioService.listarUsuarios();
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<ApiResponse<List<UsuarioModel>>> listarUsuarios() {
+        try {
+            List<UsuarioModel> usuarios = usuarioService.listarUsuarios();
+            return ResponseEntity.ok(ApiResponse.success(usuarios));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al listar usuarios: " + e.getMessage()));
+        }
     }
 
     @PutMapping("actualizar/{id}")

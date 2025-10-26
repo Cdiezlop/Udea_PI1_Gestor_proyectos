@@ -16,11 +16,14 @@ function App() {
     const location = useLocation(); // Obtén la ruta actual
 
     // Verificar si estamos en rutas donde no queremos mostrar el Navbar
-    const hideNavbar = location.pathname === "/login" || location.pathname === "/registrar" || location.pathname === "/recuperar-contrasena";
+    const hideNavbar = location.pathname === "/login" || 
+                      location.pathname === "/" || 
+                      location.pathname === "/registrar" || 
+                      location.pathname === "/recuperar-contrasena";
 
     return (
       <>
-        {!hideNavbar && <Navbar />} {/* Mostrar Navbar solo si no estamos en /login o /registrar */}
+        {!hideNavbar && <Navbar />}
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/registrar" element={<Registrar />} />
@@ -29,6 +32,7 @@ function App() {
           <Route path="/proyecto-detalles/:id" element={<ProyectoDetalles />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/cambiar-estado/:id" element={<DetalleProyectoAdmin />} />
+          <Route path="/" element={<Login />} />
         </Routes>
       </>
     );

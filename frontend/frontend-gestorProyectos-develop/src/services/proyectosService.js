@@ -1,13 +1,15 @@
+import { API_ROUTES } from '../config/apiConfig';
+
 export const fetchProyectosService = async (role, userId) => {
   // Determinar el endpoint según el rol del usuario
   let url;
 
   if (role === "Basico") {
-    // Endpoint para admin
-    url = `http://localhost:8088/gestor/api/proyectos/listar/${userId}`;
-  } else if (role === "admin") {
     // Endpoint para usuario básico
-    url = "http://localhost:8088/gestor/api/proyectos/listar";
+    url = API_ROUTES.PROJECTS.LIST_BY_USER(userId);
+  } else if (role === "admin") {
+    // Endpoint para admin
+    url = API_ROUTES.PROJECTS.LIST;
   } else {
     // Manejo opcional si el rol no es reconocido
     throw new Error("Rol desconocido: No se pudo determinar el endpoint");

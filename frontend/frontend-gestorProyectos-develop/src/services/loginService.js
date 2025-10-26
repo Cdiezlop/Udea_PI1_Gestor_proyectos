@@ -1,6 +1,6 @@
+import { API_ROUTES } from '../config/apiConfig';
+
 export const loginService = async (username, password) => {
-    const url = "http://localhost:8088/gestor/api/usuario/login";
-  
     try {
       const response = await fetch(url, {
         method: "POST",
