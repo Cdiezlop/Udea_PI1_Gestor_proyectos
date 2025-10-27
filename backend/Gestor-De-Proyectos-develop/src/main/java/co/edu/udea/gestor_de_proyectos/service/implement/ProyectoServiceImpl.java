@@ -47,7 +47,12 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
         proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
-        proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaFinalizacion().toLocalDate());
+
+        // --- CORRECCION DE LA LÓGICA DE CREACION ---
+        proyecto.setFechaCompromiso(crearProyectoDTO.getFechaCompromiso());
+        proyecto.setFechaPrimerAvance(crearProyectoDTO.getFechaPrimerAvance());
+        // --- FIN CORRECCION ---
+
         proyecto.setEstado("Por revisar");
 
         List<String> compromisosIds = new ArrayList<>();
@@ -119,18 +124,26 @@ public class ProyectoServiceImpl implements ProyectoService {
 
         proyecto.setEstado(cambioDeEstadoModel.getEstado());
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Solo procesar comentarios si se enviaron en el request
         ComentariosDTO comentariosDTO = cambioDeEstadoModel.getComentarios();
-        ComentariosModel comentario = new ComentariosModel();
-        comentario.setUser(comentariosDTO.getUser());
-        comentario.setFechaComentarios(fechaActual.getCurrentDate());
-        comentario.setComentario(comentariosDTO.getComentario());
+        if (comentariosDTO != null && comentariosDTO.getComentario() != null && !comentariosDTO.getComentario().isEmpty()) {
+            ComentariosModel comentario = new ComentariosModel();
+            comentario.setUser(comentariosDTO.getUser()); // Asumimos que el frontend enviará el usuario
+            comentario.setFechaComentarios(fechaActual.getCurrentDate());
+            comentario.setComentario(comentariosDTO.getComentario());
 
-        if ("Aceptado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
-            comentario.setTipoComentario("Proyecto aceptado");
-        } else {
-            comentario.setTipoComentario("Proyecto rechazado");
+            if ("Aceptado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
+                comentario.setTipoComentario("Proyecto aceptado");
+            } else if ("Rechazado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
+                comentario.setTipoComentario("Proyecto rechazado");
+            } else {
+                comentario.setTipoComentario("Actualización de estado");
+            }
+            proyecto.setComentarios(comentario); // Anade el nuevo comentario
         }
-        proyecto.setComentarios(comentario);
+        // --- FIN DE LA CORRECCIÓN ---
+
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
         Proyecto updatedProyecto = proyectoRepository.save(proyecto);
         return mapToModel(updatedProyecto);
@@ -151,6 +164,12 @@ public class ProyectoServiceImpl implements ProyectoService {
         model.setEstado(proyecto.getEstado());
         model.setComentarios(proyecto.getComentarios());
         model.setCompromisosId(proyecto.getCompromisosId());
+
+        // --- CORRECCIÓN DEL MAPEO (PARA MOSTRAR FECHAS) ---
+        model.setFechaCompromiso(proyecto.getFechaCompromiso());
+        model.setFechaPrimerAvance(proyecto.getFechaPrimerAvance());
+        // --- FIN CORRECCIÓN ---
+
         return model;
     }
 

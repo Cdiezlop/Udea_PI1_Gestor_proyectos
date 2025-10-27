@@ -1,19 +1,19 @@
-import { API_ROUTES } from '../config/apiConfig';
+import { API_BASE } from "../config"; // Importa la URL base
 
 export const fetchProyectosService = async (role, userId) => {
-  // Determinar el endpoint según el rol del usuario
-  let url;
+  let endpoint;
 
-  if (role === "Basico") {
-    // Endpoint para usuario básico
-    url = API_ROUTES.PROJECTS.LIST_BY_USER(userId);
+  if (role === "Basico" && userId) {
+     // Endpoint para usuario básico requiere userId
+    endpoint = `/api/proyectos/listar/${userId}`;
   } else if (role === "admin") {
-    // Endpoint para admin
-    url = API_ROUTES.PROJECTS.LIST;
+    // Endpoint para admin no requiere userId
+    endpoint = "/api/proyectos/listar";
   } else {
-    // Manejo opcional si el rol no es reconocido
-    throw new Error("Rol desconocido: No se pudo determinar el endpoint");
+    throw new Error("Rol desconocido o falta userId: No se pudo determinar el endpoint");
   }
+
+  const url = `${API_BASE}${endpoint}`; // Construye la URL completa
 
   try {
     const response = await fetch(url);
@@ -22,6 +22,6 @@ export const fetchProyectosService = async (role, userId) => {
     }
     return await response.json();
   } catch (error) {
-    throw new Error("Error de red: no se pudo conectar al servidor");
+    throw new Error(error.message || "Error de red: no se pudo conectar al servidor");
   }
 };

@@ -1,7 +1,7 @@
-const API_BASE_URL = "http://localhost:8088/gestor/api";
+import { API_BASE } from "../config"; // Importa la URL base
 
 export const fetchProyectoDetailsService = async (id) => {
-  const url = `${API_BASE_URL}/proyectos/${id}`;
+  const url = `${API_BASE}/api/proyectos/${id}`; // Construye la URL completa
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -9,6 +9,6 @@ export const fetchProyectoDetailsService = async (id) => {
     }
     return await response.json();
   } catch (error) {
-    throw new Error("Error de red: no se pudo conectar al servidor");
+    throw new Error(error.message || "Error de red: no se pudo conectar al servidor");
   }
 };

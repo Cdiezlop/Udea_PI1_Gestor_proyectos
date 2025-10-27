@@ -8,7 +8,7 @@ import {
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE } from "../config"; // ✅ Importar la base del API
+import { API_BASE } from "../config"; // Importar la base del API
 import "../styles/CrearProyecto.css";
 
 export default function CrearProyecto() {
@@ -24,7 +24,7 @@ export default function CrearProyecto() {
 
   useEffect(() => {
     // Intentar cargar categorías (si el endpoint existe)
-    fetch(`${API_BASE}/categorias/listar`)
+    fetch(`${API_BASE}/api/categorias/listar`)
       .then(r => r.json())
       .then(data => setCategorias(data))
       .catch(() => {});
@@ -61,7 +61,7 @@ export default function CrearProyecto() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/proyectos/crear`, {
+      const res = await fetch(`${API_BASE}/api/proyectos/crear`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(proyecto),

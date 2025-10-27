@@ -22,7 +22,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/proyectos")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ProyectoController {
 

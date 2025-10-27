@@ -18,7 +18,6 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(origins = "*") // Permitir solicitudes de cualquier origen
 @RequiredArgsConstructor
 public class CategoriaController {
 

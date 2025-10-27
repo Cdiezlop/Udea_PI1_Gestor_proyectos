@@ -23,6 +23,12 @@ public class ProyectoModel {
     private List<String> compromisosId;
     private LocalDate fechaCreacion;
     private LocalDate fechaModificacion;
+
+    // --- CAMPOS AÑADIDOS ---
+    private LocalDate fechaCompromiso;
+    private LocalDate fechaPrimerAvance;
+    // --- FIN CAMPOS AÑADIDOS ---
+
     private LocalDate fechaFinalizacion;
     private String estado;
     private ComentariosModel comentarios;

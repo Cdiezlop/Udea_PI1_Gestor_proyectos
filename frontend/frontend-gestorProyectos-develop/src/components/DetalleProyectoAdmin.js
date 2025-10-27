@@ -10,7 +10,8 @@ export default function DetalleProyectoAdmin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE}/proyectos/${id}`)
+    // --- LÍNEA CORREGIDA --- (Añadido /api/)
+    fetch(`${API_BASE}/api/proyectos/${id}`)
       .then(r => r.json())
       .then(data => { setProyecto(data); setEstado(data.estado); })
       .catch(console.error);
@@ -20,10 +21,14 @@ export default function DetalleProyectoAdmin() {
 
   const guardarEstado = async () => {
     try {
-      const res = await fetch(`${API_BASE}/proyectos/${id}/estado`, {
+      // --- LÍNEA CORREGIDA --- (Añadido /api/ y cambiado a /cambiar-estado/)
+      const res = await fetch(`${API_BASE}/api/proyectos/cambiar-estado/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado }),
+        // El backend espera un objeto CambioDeEstadoModel, 
+        // que puede incluir "estado" y "comentarios"
+        // Por ahora, solo enviamos el estado.
+        body: JSON.stringify({ estado: estado }), 
       });
       if (!res.ok) throw new Error('No se pudo actualizar el estado');
       alert('Estado actualizado');
@@ -41,6 +46,7 @@ export default function DetalleProyectoAdmin() {
       <p><strong>Nombre:</strong> {proyecto.nombre}</p>
       <p><strong>Descripción:</strong> {proyecto.descripcion}</p>
       <p><strong>Presupuesto:</strong> {proyecto.presupuesto}</p>
+      {/* Estos campos ahora deberían aparecer */}
       <p><strong>Fecha compromiso:</strong> {proyecto.fechaCompromiso}</p>
       <p><strong>Fecha primer avance:</strong> {proyecto.fechaPrimerAvance}</p>
       <p><strong>Estado:</strong> {proyecto.estado}</p>
