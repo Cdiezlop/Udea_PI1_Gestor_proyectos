@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom"; // Importa Link
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { API_BASE } from "../config";
 import "../styles/DetalleProyectoAdmin.css";
 
@@ -9,6 +9,28 @@ export default function DetalleProyectoAdmin() {
   const [estado, setEstado] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // --- FUNCIÓN DE COLOR AÑADIDA ---
+  const getEstadoClass = (estado) => {
+    switch (estado) {
+      case 'Aceptado':
+        return 'bg-success'; // Verde
+      case 'En ejecución':
+        return 'bg-primary'; // Azul
+      case 'Rechazado':
+        return 'bg-danger'; // Rojo
+      case 'Atrasado':
+        return 'bg-warning text-dark'; // Amarillo (con texto oscuro)
+      case 'Terminado':
+        return 'bg-info text-dark'; // Celeste (con texto oscuro)
+      case 'Aplazado':
+        return 'bg-dark'; // Negro/Gris oscuro
+      case 'Por revisar':
+      default:
+        return 'bg-secondary'; // Gris
+    }
+  };
+  // --- FIN FUNCIÓN DE COLOR ---
 
   useEffect(() => {
     fetch(`${API_BASE}/api/proyectos/${id}`)
@@ -36,13 +58,11 @@ export default function DetalleProyectoAdmin() {
       const res = await fetch(`${API_BASE}/api/proyectos/cambiar-estado/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        // El backend espera un objeto CambioDeEstadoModel, 
-        // enviamos el estado y un objeto 'comentarios' vacío por ahora.
         body: JSON.stringify({ 
           estado: estado,
           comentarios: {
-            user: localStorage.getItem('user') || 'admin', // Enviar el usuario que hace el cambio
-            comentario: `Estado actualizado a: ${estado}` // Un comentario por defecto
+            user: localStorage.getItem('user') || 'admin', 
+            comentario: `Estado actualizado a: ${estado}`
           }
         }),
       });
@@ -63,35 +83,41 @@ export default function DetalleProyectoAdmin() {
 
   return (
     <div className="detalle-proyecto-admin container mt-5" style={{ maxWidth: '900px' }}>
-      <div className="detalle-container card shadow-sm">
-        <div className="card-header bg-light d-flex justify-content-between align-items-center">
-          {/* --- BOTÓN VOLVER AÑADIDO --- */}
+      {/* Contenedor tipo "tarjeta" de Bootstrap */}
+      <div className="detalle-container card shadow-lg border-0">
+        <div className="card-header bg-light d-flex justify-content-between align-items-center p-3">
           <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
             &larr; Volver a Proyectos
           </Link>
           <h2 className="h4 mb-0 text-center flex-grow-1">Detalle del Proyecto (Revisor)</h2>
         </div>
+        
         <div className="card-body p-4">
-          <h3 className="h5 card-title">{proyecto.nombre}</h3>
-          <p className="card-text text-muted">{proyecto.descripcion}</p>
+          <h3 className="h5 card-title text-primary">{proyecto.nombre}</h3>
+          <p className="card-text text-muted mb-4">{proyecto.descripcion}</p>
           
           <hr />
 
           <div className="row g-3">
             <div className="col-md-6">
-              <p><strong>Presupuesto:</strong> ${new Intl.NumberFormat('es-CO').format(proyecto.presupuesto)}</p>
+              <p className="mb-2"><strong>Presupuesto:</strong> ${new Intl.NumberFormat('es-CO').format(proyecto.presupuesto)}</p>
             </div>
             <div className="col-md-6">
-              <p><strong>Categoría:</strong> {proyecto.categoria}</p>
+              <p className="mb-2"><strong>Categoría:</strong> {proyecto.categoria}</p>
             </div>
             <div className="col-md-6">
-              <p><strong>Fecha Compromiso:</strong> {proyecto.fechaCompromiso}</p>
+              <p className="mb-2"><strong>Fecha Compromiso:</strong> {proyecto.fechaCompromiso}</p>
             </div>
             <div className="col-md-6">
-              <p><strong>Fecha Primer Avance:</strong> {proyecto.fechaPrimerAvance}</p>
+              <p className="mb-2"><strong>Fecha Primer Avance:</strong> {proyecto.fechaPrimerAvance}</p>
             </div>
-            <div className="col-md-6">
-              <p><strong>Estado Actual:</strong> <span className="badge bg-info text-dark">{proyecto.estado}</span></p>
+            <div className="col-12">
+              {/* --- ESTADO CON COLOR AÑADIDO --- */}
+              <p className="mb-2"><strong>Estado Actual:</strong> 
+                <span className={`badge ms-2 fs-6 ${getEstadoClass(proyecto.estado)}`}>
+                  {proyecto.estado}
+                </span>
+              </p>
             </div>
           </div>
 

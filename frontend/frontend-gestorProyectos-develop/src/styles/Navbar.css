@@ -1,49 +1,55 @@
 .navbar {
-  display: flex;
-  justify-content: center; /* Centrar el contenido horizontalmente */
-  align-items: center; /* Centrar verticalmente */
-  padding: 8px 0; /* Reducir el espacio vertical */
-  background-color: #f8f9fa; /* Fondo claro */
-  border-bottom: 1px solid #ddd; /* Línea inferior */
+  padding: 0.75rem 0; /* Espaciado vertical */
+  border-bottom: 1px solid #dee2e6;
 }
 
 .navbar-content {
-  width: 100%; /* Ocupa el 95% del ancho para reducir separación lateral */
-  max-width: 1650px; /* Limitar el ancho máximo */
+  width: 100%;
+  max-width: 1400px; /* Ancho máximo para pantallas grandes */
   display: flex;
-  justify-content: space-between; /* Separar título y usuario */
-  align-items: center; /* Centrar elementos verticalmente */
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto; /* Centrar el contenido */
+  padding: 0 1rem; /* Espaciado lateral */
 }
 
 .navbar-title {
-  font-size: 1.4rem; /* Reducir el tamaño del título */
-  font-weight: bold;
-  margin: 0; /* Sin márgenes */
-  padding-left: 10px; /* Añadir espacio a la izquierda */
+  font-size: 1.25rem; /* Tamaño de título ajustado */
+  font-weight: 600;
+  margin: 0;
+  padding-left: 0; /* Quitamos el padding extra */
 }
 
-.btn-danger {
-  font-size: 0.85rem; /* Reducir un poco el tamaño del botón */
-  padding: 6px 12px; /* Reducir el tamaño del botón */
-  border-radius: 5px; /* Esquinas redondeadas */
-}
-
+/* Colores para el título según el rol */
 .navbar-admin {
-  color: #0D6EFD; /* Azul para admin */
+  color: #0d6efd; /* Azul Bootstrap */
 }
 
 .navbar-basico {
-  color: #0D6EFD; /* Azul para básico */
+  color: #198754; /* Verde Bootstrap */
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 15px; /* Reducir espacio entre el nombre y el botón */
+  gap: 0.75rem; /* Espacio entre icono, nombre y botón */
 }
 
 .user-name {
-  font-size: 0.95rem; /* Reducir un poco el tamaño del texto */
+  font-size: 1rem;
   font-weight: 500;
-  color: #555; /* Color gris oscuro */
+  color: #343a40; /* Color de texto oscuro */
+  white-space: nowrap; /* Evita que el nombre se parta en dos líneas */
+}
+
+.user-icon {
+  color: #495057; /* Color gris para el icono */
+  flex-shrink: 0; /* Evita que el icono se encoja */
+}
+
+/* Ajusta el tamaño y padding del botón cerrar sesión si es necesario */
+.user-info .btn-danger { /* Selector más específico */
+  font-size: 0.9rem;
+  padding: 0.3rem 0.8rem;
+  white-space: nowrap;
 }
