@@ -5,6 +5,44 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura */
+
+  /* --- FONDO PARA LA APP PRINCIPAL --- */
+  /* Corrección: La ruta es relativa a este archivo (src/index.css) */
+  /* Asegúrate que 'fondo-app.jpg' esté en 'src/assets/images/' */
+  background-image: url('./assets/images/fondo-app.jpg');
+  background-size: cover; /* Cubre todo el área */
+  background-position: center center; /* Centra la imagen */
+  background-attachment: fixed; /* El fondo no se mueve con el scroll */
+  background-color: #f8f9fa; /* Color de fallback muy claro */
+}
+
+/* Capa sutil sobre el fondo de la app para mejorar legibilidad del contenido */
+body::before {
+  content: "";
+  position: fixed; /* Fijo para cubrir toda la ventana */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.75); /* Capa blanca semi-transparente - Aumenté un poco la opacidad */
+  backdrop-filter: blur(2px); /* Desenfoque ligero */
+  z-index: -1; /* Detrás del contenido */
+}
+
+
+/* Hacemos que los contenedores principales tengan fondo blanco sólido y sombra.
+   El fondo de la app solo se verá sutilmente en los márgenes.
+*/
+.container.mt-5,
+.crear-proyecto.container,
+.detalle-proyecto-admin.container,
+.proyecto-detalles.container { /* Añadido para detalles de usuario normal */
+  background-color: #ffffff;
+  border-radius: 0.5rem; /* Bordes redondeados estándar */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* Sombra estándar */
+  position: relative; /* Asegura que esté por encima del pseudo-elemento ::before del body */
+  z-index: 1;
 }
 
 code {

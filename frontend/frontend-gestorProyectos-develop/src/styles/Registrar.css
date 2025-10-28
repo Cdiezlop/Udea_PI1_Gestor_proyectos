@@ -1,13 +1,39 @@
-/* Estilos generales solo para la página de crear cuenta */
+/* --- ESTILOS DE FONDO AÑADIDOS --- */
 .crear-cuenta-page {
   font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh; /* Altura mínima */
+  padding: 3rem 1rem; /* Padding vertical y horizontal */
   margin: 0;
+  position: relative; /* Necesario para la superposición */
+  box-sizing: border-box;
+
+  /* Fondo sutil */
+  /* Corrección: La ruta es relativa a este archivo (src/styles/Registrar.css) */
+  /* Asegúrate que 'fondo-auth.jpg' esté en 'src/assets/images/' */
+  background-image: url('../assets/images/fondo-auth.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed; /* Fondo fijo */
 }
+
+/* Capa de superposición para opacidad */
+.crear-cuenta-page::before {
+  content: "";
+  position: fixed; /* Fijo para que cubra todo */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Capa blanca semi-transparente */
+  background-color: rgba(255, 255, 255, 0.7); /* Aumentamos opacidad para legibilidad */
+  backdrop-filter: blur(3px); /* Desenfoque sutil */
+  z-index: 1; /* Detrás del contenido */
+}
+/* --- FIN ESTILOS DE FONDO --- */
+
 
 .crear-cuenta {
   display: flex;
@@ -17,43 +43,53 @@
 }
 
 .form-container {
-  background-color: #ffffff;
-  padding: 2rem;
+  background-color: #ffffff; /* Fondo blanco sólido */
+  padding: 2.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 600px;
+  max-width: 700px; /* Más ancho para dos columnas */
+  position: relative; /* Para z-index */
+  z-index: 2; /* Encima del fondo */
 }
 
 .crear-cuenta-page h1 {
   text-align: center;
   margin-bottom: 2rem;
+  font-weight: 600;
+  color: #333; /* Color oscuro */
 }
 
 /* Diseño en dos columnas */
 .form-row {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap; /* Para que se ajusten en móvil */
+  gap: 1.5rem; /* Espacio entre columnas */
+  margin-bottom: 1.25rem;
 }
 
 .form-column {
   flex: 1;
+  min-width: 250px; /* Ancho mínimo para que se ajusten */
 }
 
 label {
   display: block;
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-input {
+input[type="text"],
+input[type="number"],
+input[type="password"] {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-bottom: 1rem;
+  box-sizing: border-box; /* Importante para el padding */
 }
 
 input[type="number"] {
@@ -63,20 +99,36 @@ input[type="number"] {
 input:focus {
   outline: none;
   border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
 }
 
 button.btn-submit {
   width: 100%;
-  padding: 1rem;
+  padding: 0.85rem;
   background-color: #007bff;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease;
 }
 
 button.btn-submit:hover {
   background-color: #0056b3;
+}
+
+button.btn-submit:disabled {
+  background-color: #aaa;
+}
+
+/* Estilo para el enlace de "Volver" */
+.text-center.mt-3 a {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-decoration: none;
+}
+.text-center.mt-3 a:hover {
+  text-decoration: underline;
 }

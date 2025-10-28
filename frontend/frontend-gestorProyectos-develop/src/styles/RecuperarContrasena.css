@@ -1,59 +1,111 @@
-/* Contenedor principal de la página de recuperación de contraseña */
+/* --- ESTILOS DE FONDO AÑADIDOS --- */
 .recuperar-contrasena-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f8f8f8;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  margin: 0;
+  position: relative;
+  box-sizing: border-box;
   
-  .recuperar-contrasena-container {
-    width: 100%;
-    max-width: 400px;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Estilo para los campos del formulario */
-  .input-field {
-    margin-bottom: 20px;
-  }
-  
-  .input-field label {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .input-field input {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-  }
-  
-  /* Estilo para el botón de submit */
-  .btn-submit {
-    width: 100%;
-    padding: 12px;
-    background-color: #007bff;
-    color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .btn-submit:hover {
-    background-color: #0056b3;
-  }
+  /* Fondo sutil */
+  /* Corrección: La ruta es relativa a este archivo (src/styles/...) */
+  /* Asegúrate que 'fondo-auth.jpg' esté en 'src/assets/images/' */
+  background-image: url('../assets/images/fondo-auth.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed; /* Fondo fijo */
+}
+
+.recuperar-contrasena-page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7); /* Capa blanca semi-transparente - Aumenté opacidad */
+  backdrop-filter: blur(3px); /* Desenfoque sutil */
+  z-index: 1; /* Detrás del contenido */
+}
+/* --- FIN ESTILOS DE FONDO --- */
+
+.recuperar-contrasena-container {
+  width: 100%;
+  max-width: 450px; /* Ancho ajustado */
+  background-color: white; /* SÓLIDO */
+  padding: 2.5rem; /* Más espaciado */
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+  position: relative; /* Para z-index */
+  z-index: 2; /* Encima del fondo */
+}
+
+.recuperar-contrasena-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #333; /* Color oscuro */
+}
+
+/* Estilo para los campos del formulario */
+.input-field {
+  margin-bottom: 1.25rem;
+}
+
+.input-field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+  text-align: left;
+  color: #555;
+}
+
+.input-field input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+}
+
+/* Estilo para el botón de submit */
+.btn-submit {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: #007bff;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover {
+  background-color: #0056b3;
+}
+
+.btn-submit:disabled {
+  background-color: #aaa;
+}
+
+/* Estilo para el enlace de "Volver" (ya lo habías añadido) */
+.text-center.mt-3 a {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-decoration: none;
+}
+.text-center.mt-3 a:hover {
+  text-decoration: underline;
+}
