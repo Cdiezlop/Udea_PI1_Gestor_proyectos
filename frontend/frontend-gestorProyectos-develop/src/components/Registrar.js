@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { registrarUsuarioService } from "../services/registrar-usuarioService"; // Importar el servicio
-import "../styles/Registrar.css"; // Estilos para esta página
+import { useNavigate, Link } from "react-router-dom"; // Importa Link
+import { registrarUsuarioService } from "../services/registrar-usuarioService";
+import "../styles/Registrar.css";
 
 function Registrar() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ function Registrar() {
     password: "",
     confirmarContrasena: "",
   });
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const handleChange = (e) => {
     setFormData({
@@ -25,25 +26,36 @@ function Registrar() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Activar loading
 
     if (formData.password !== formData.confirmarContrasena) {
       alert("Las contraseñas no coinciden.");
+      setLoading(false); // Desactivar loading
       return;
     }
 
+    // Convertir edad y estrato a números
+    const dataToSend = {
+      ...formData,
+      edad: Number(formData.edad),
+      estrato: Number(formData.estrato),
+    };
+
     try {
-      await registrarUsuarioService(formData); // Usar el servicio para registrar
+      await registrarUsuarioService(dataToSend);
       alert("Usuario registrado exitosamente");
-      navigate("/login"); // Redirigir al login
+      navigate("/login");
     } catch (error) {
       alert(error.message || "Error en el registro");
+    } finally {
+      setLoading(false); // Desactivar loading
     }
   };
 
   return (
     <div className="crear-cuenta-page">
       <div className="form-container">
-        <h1>Crear cuenta</h1>
+        <h1 className="text-center">Crear cuenta</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-column">
@@ -56,6 +68,7 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu nombre"
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-column">
@@ -68,6 +81,7 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tus apellidos"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -83,6 +97,7 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu usuario"
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-column">
@@ -95,6 +110,8 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu edad"
                 required
+                min="0"
+                disabled={loading}
               />
             </div>
           </div>
@@ -110,6 +127,8 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu estrato"
                 required
+                min="0"
+                disabled={loading}
               />
             </div>
             <div className="form-column">
@@ -122,6 +141,7 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu ciudad"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -137,6 +157,7 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Introduce tu contraseña"
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-column">
@@ -149,12 +170,22 @@ function Registrar() {
                 onChange={handleChange}
                 placeholder="Confirma tu contraseña"
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
-          <button type="submit" className="btn-submit">Registrarse</button>
+          <button type="submit" className="btn-submit" disabled={loading}>
+            {loading ? "Registrando..." : "Registrarse"}
+          </button>
         </form>
+
+        {/* --- BOTÓN VOLVER AÑADIDO --- */}
+        <div className="text-center mt-3">
+          <Link to="/login">Volver a Inicio de Sesión</Link>
+        </div>
+        {/* --- FIN BOTÓN VOLVER --- */}
+
       </div>
     </div>
   );

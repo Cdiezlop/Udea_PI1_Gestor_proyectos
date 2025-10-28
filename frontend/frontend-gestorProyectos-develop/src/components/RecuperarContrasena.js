@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { recuperarContrasenaService } from "../services/recuperarContrasenaService"; // Importar el servicio
-import "../styles/RecuperarContrasena.css"; // Estilos para esta página
+import { useNavigate, Link } from "react-router-dom"; // Importa Link
+import { recuperarContrasenaService } from "../services/recuperarContrasenaService";
+import "../styles/RecuperarContrasena.css";
 
 function RecuperarContrasena() {
   const [formData, setFormData] = useState({
@@ -9,8 +9,8 @@ function RecuperarContrasena() {
     nuevaContrasena: "",
     confirmarContrasena: "",
   });
-  const [loading, setLoading] = useState(false); // Manejo de estado de carga
-  const navigate = useNavigate(); // Redirección
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -27,10 +27,9 @@ function RecuperarContrasena() {
       return;
     }
 
-    setLoading(true); // Activar estado de carga
+    setLoading(true);
 
     try {
-      // Llamar al servicio
       await recuperarContrasenaService(
         formData.usuario,
         formData.nuevaContrasena,
@@ -38,13 +37,13 @@ function RecuperarContrasena() {
       );
 
       alert("Contraseña actualizada correctamente");
-      setFormData({ usuario: "", nuevaContrasena: "", confirmarContrasena: "" }); // Limpiar formulario
+      setFormData({ usuario: "", nuevaContrasena: "", confirmarContrasena: "" });
       
-      navigate("/login"); // Redirigir al login
+      navigate("/login");
     } catch (error) {
       alert(error.message || "Error al actualizar la contraseña");
     } finally {
-      setLoading(false); // Desactivar estado de carga
+      setLoading(false);
     }
   };
 
@@ -64,7 +63,7 @@ function RecuperarContrasena() {
               onChange={handleChange}
               placeholder="Introduce tu usuario"
               required
-              disabled={loading} // Desactivar mientras carga
+              disabled={loading}
             />
           </div>
 
@@ -78,7 +77,7 @@ function RecuperarContrasena() {
               onChange={handleChange}
               placeholder="Introduce tu nueva contraseña"
               required
-              disabled={loading} // Desactivar mientras carga
+              disabled={loading}
             />
           </div>
 
@@ -92,18 +91,25 @@ function RecuperarContrasena() {
               onChange={handleChange}
               placeholder="Confirma tu nueva contraseña"
               required
-              disabled={loading} // Desactivar mientras carga
+              disabled={loading}
             />
           </div>
 
           <button
             type="submit"
             className="btn-submit"
-            disabled={loading} // Desactivar mientras carga
+            disabled={loading}
           >
             {loading ? "Actualizando..." : "Actualizar contraseña"}
           </button>
         </form>
+
+        {/* --- BOTÓN VOLVER AÑADIDO --- */}
+        <div className="text-center mt-3">
+          <Link to="/login">Volver a Inicio de Sesión</Link>
+        </div>
+        {/* --- FIN BOTÓN VOLVER --- */}
+        
       </div>
     </div>
   );

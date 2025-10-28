@@ -112,3 +112,4 @@ public class CompromisoServiceImpl implements CompromisoService {
         return UUID.randomUUID().toString();
     }
 }
+

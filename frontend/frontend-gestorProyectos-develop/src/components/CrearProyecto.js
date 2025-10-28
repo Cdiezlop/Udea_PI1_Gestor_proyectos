@@ -1,14 +1,6 @@
-/*
-import {
-  fetchCategoriasService,
-  crearProyectoService,
-} from "../services/crear-proyectosService"; // Importamos los servicios
-
-*/
-
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { API_BASE } from "../config"; // Importar la base del API
+import { useNavigate, Link } from "react-router-dom"; // Importa Link
+import { API_BASE } from "../config";
 import "../styles/CrearProyecto.css";
 
 export default function CrearProyecto() {
@@ -23,7 +15,6 @@ export default function CrearProyecto() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Intentar cargar categorías (si el endpoint existe)
     fetch(`${API_BASE}/api/categorias/listar`)
       .then(r => r.json())
       .then(data => setCategorias(data))
@@ -66,7 +57,10 @@ export default function CrearProyecto() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(proyecto),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const errorData = await res.json(); // Intenta leer el error JSON del backend
+        throw new Error(errorData.message || 'Error desconocido al crear el proyecto');
+      }
       alert('Proyecto creado correctamente.');
       navigate('/proyectos');
     } catch (err) {
@@ -75,42 +69,55 @@ export default function CrearProyecto() {
   };
 
   return (
-    <div className="crear-proyecto">
-      <h2>Crear Proyecto</h2>
+    // Aplicamos clases de Bootstrap para centrar y dar estilo
+    <div className="crear-proyecto container mt-5 p-4 p-md-5 bg-light rounded shadow" style={{ maxWidth: '800px' }}>
+      
+      {/* --- BOTÓN VOLVER AÑADIDO --- */}
+      <div className="mb-3">
+        <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
+          &larr; Volver a Proyectos
+        </Link>
+      </div>
+      {/* --- FIN BOTÓN VOLVER --- */}
+
+      <h2 className="text-center mb-4">Crear Proyecto</h2>
       <form onSubmit={submit}>
-        <div className="form-group">
-          <label>Nombre</label>
-          <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} required />
+        {/* Usamos el sistema de grid de Bootstrap para un formulario más limpio */}
+        <div className="row g-3">
+          <div className="col-12">
+            <label htmlFor="nombre" className="form-label">Nombre del Proyecto</label>
+            <input type="text" id="nombre" className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} required />
+          </div>
+          <div className="col-12">
+            <label htmlFor="descripcion" className="form-label">Descripción</label>
+            <textarea id="descripcion" className="form-control" rows="3" value={descripcion} onChange={e => setDescripcion(e.target.value)} required />
+          </div>
+          <div className="col-md-6">
+            <label htmlFor="categoria" className="form-label">Categoría</label>
+            <select id="categoria" className="form-select" value={categoria} onChange={e => setCategoria(e.target.value)} required>
+              <option value="">-- Seleccione --</option>
+              {categorias.map(c => (
+                <option key={c._id || c.id} value={c.name || c.nombre}>
+                  {c.name || c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-6">
+            <label htmlFor="presupuesto" className="form-label">Presupuesto</label>
+            <input type="number" id="presupuesto" className="form-control" min="0" step="0.01" value={presupuesto} onChange={e => setPresupuesto(e.target.value)} required />
+          </div>
+          <div className="col-md-6">
+            <label htmlFor="fechaCompromiso" className="form-label">Fecha compromiso</label>
+            <input type="date" id="fechaCompromiso" className="form-control" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} required />
+          </div>
+          <div className="col-md-6">
+            <label htmlFor="fechaPrimerAvance" className="form-label">Fecha primer avance</label>
+            <input type="date" id="fechaPrimerAvance" className="form-control" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} required />
+          </div>
         </div>
-        <div className="form-group">
-          <label>Descripción</label>
-          <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Categoría</label>
-          <select value={categoria} onChange={e => setCategoria(e.target.value)} required>
-            <option value="">-- Seleccione --</option>
-            {categorias.map(c => (
-              <option key={c._id || c.id} value={c.name || c.nombre}>
-                {c.name || c.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Presupuesto</label>
-          <input type="number" min="0" step="0.01" value={presupuesto} onChange={e => setPresupuesto(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Fecha compromiso</label>
-          <input type="date" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Fecha primer avance</label>
-          <input type="date" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} required />
-        </div>
-        <div className="text-center">
-          <button type="submit" className="btn btn-primary">Crear</button>
+        <div className="text-center mt-4">
+          <button type="submit" className="btn btn-primary btn-lg crear-btn">Crear</button>
         </div>
       </form>
     </div>
