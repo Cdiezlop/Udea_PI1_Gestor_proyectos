@@ -28,10 +28,12 @@ public class Proyecto {
     private String dirigidoa_a;
     private List<String> compromisosId;
     private LocalDate fechaCreacion;
+    private LocalDate fechaInicio;
     private LocalDate fechaModificacion;
     private LocalDate fechaCompromiso;
     private LocalDate fechaPrimerAvance;
-    private LocalDate fechaFinalizacion; // Este campo no se usa en la creacion por ahora
+    private LocalDate fechaFinalizacion;
+    private int duracion;
     private String estado;
     private ComentariosModel comentarios;
 }

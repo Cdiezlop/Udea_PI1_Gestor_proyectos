@@ -1,8 +1,7 @@
 package co.edu.udea.gestor_de_proyectos.model.dto;
 
 import lombok.Data;
-import java.time.LocalDate; // Importamos LocalDate
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -18,12 +17,10 @@ public class CrearProyectoDTO {
 
     // --- CAMPOS CORREGIDOS ---
     // Cambiamos de LocalDateTime a LocalDate para que coincida con el input "date"
+    private LocalDate fechaInicio;
     private LocalDate fechaCompromiso;
     private LocalDate fechaPrimerAvance;
+    private int duracion;
     // --- FIN CAMPOS CORREGIDOS ---
 
-    // Estos los maneja el servicio, no es necesario enviarlos desde el frontend
-    // private LocalDateTime fechaCreacion;
-    // private LocalDateTime fechaModificacion;
-    // private LocalDateTime fechaFinalizacion;
 }

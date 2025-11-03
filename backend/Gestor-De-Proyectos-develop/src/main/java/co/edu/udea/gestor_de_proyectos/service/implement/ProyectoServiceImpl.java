@@ -48,11 +48,18 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
 
-        // --- CORRECCION DE LA LÓGICA DE CREACION ---
+        proyecto.setFechaInicio(crearProyectoDTO.getFechaInicio());
+        proyecto.setDuracion(crearProyectoDTO.getDuracion());
         proyecto.setFechaCompromiso(crearProyectoDTO.getFechaCompromiso());
         proyecto.setFechaPrimerAvance(crearProyectoDTO.getFechaPrimerAvance());
-        // --- FIN CORRECCION ---
 
+        if (crearProyectoDTO.getFechaInicio() != null && crearProyectoDTO.getDuracion() > 0) {
+            LocalDate fechaFinalizacion = crearProyectoDTO.getFechaInicio()
+                    .plusMonths(crearProyectoDTO.getDuracion());
+            proyecto.setFechaFinalizacion(fechaFinalizacion);
+        } else {
+            proyecto.setFechaFinalizacion(null);
+        }
         proyecto.setEstado("Por revisar");
 
         List<String> compromisosIds = new ArrayList<>();
@@ -73,9 +80,12 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setCompromisosId(compromisosIds);
 
         Proyecto savedProyecto = proyectoRepository.save(proyecto);
-        log.info("Proyecto creado con ID: {}", savedProyecto.getId());
+        log.info("✅ Proyecto creado con ID: {} y fecha finalización: {}",
+                savedProyecto.getId(), savedProyecto.getFechaFinalizacion());
+
         return mapToModel(savedProyecto);
     }
+
 
     @Override
     public List<ProyectoModel> listarProyectosPorUsuario(String userId) {
