@@ -10,7 +10,6 @@ export default function DetalleProyectoAdmin() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // --- FUNCIÓN DE COLOR AÑADIDA ---
   const getEstadoClass = (estado) => {
     switch (estado) {
       case 'Aceptado':
@@ -30,7 +29,6 @@ export default function DetalleProyectoAdmin() {
         return 'bg-secondary'; // Gris
     }
   };
-  // --- FIN FUNCIÓN DE COLOR ---
 
   useEffect(() => {
     fetch(`${API_BASE}/api/proyectos/${id}`)
@@ -83,7 +81,6 @@ export default function DetalleProyectoAdmin() {
 
   return (
     <div className="detalle-proyecto-admin container mt-5" style={{ maxWidth: '900px' }}>
-      {/* Contenedor tipo "tarjeta" de Bootstrap */}
       <div className="detalle-container card shadow-lg border-0">
         <div className="card-header bg-light d-flex justify-content-between align-items-center p-3">
           <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
@@ -105,14 +102,26 @@ export default function DetalleProyectoAdmin() {
             <div className="col-md-6">
               <p className="mb-2"><strong>Categoría:</strong> {proyecto.categoria}</p>
             </div>
+
+            {/* --- CAMPOS ACTUALIZADOS/AÑADIDOS --- */}
             <div className="col-md-6">
-              <p className="mb-2"><strong>Fecha Compromiso:</strong> {proyecto.fechaCompromiso}</p>
+              <p className="mb-2"><strong>Fecha de Registro:</strong> {proyecto.fechaCreacion}</p>
+            </div>
+            <div className="col-md-6">
+              <p className="mb-2"><strong>Fecha de Inicio:</strong> {proyecto.fechaInicio}</p>
+            </div>
+            <div className="col-md-6">
+              <p className="mb-2"><strong>Duración (Calculada):</strong> {proyecto.duracion} {proyecto.duracion === 1 ? 'mes' : 'meses'}</p>
+            </div>
+             {/* --- FIN CAMPOS --- */}
+            
+            <div className="col-md-6">
+              <p className="mb-2"><strong>Fecha Compromiso (Final):</strong> {proyecto.fechaCompromiso}</p>
             </div>
             <div className="col-md-6">
               <p className="mb-2"><strong>Fecha Primer Avance:</strong> {proyecto.fechaPrimerAvance}</p>
             </div>
             <div className="col-12">
-              {/* --- ESTADO CON COLOR AÑADIDO --- */}
               <p className="mb-2"><strong>Estado Actual:</strong> 
                 <span className={`badge ms-2 fs-6 ${getEstadoClass(proyecto.estado)}`}>
                   {proyecto.estado}

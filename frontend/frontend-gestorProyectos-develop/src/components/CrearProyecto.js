@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Importa Link
+import { useNavigate, Link } from "react-router-dom"; 
 import { API_BASE } from "../config";
 import "../styles/CrearProyecto.css";
 
@@ -9,8 +9,13 @@ export default function CrearProyecto() {
   const [categoria, setCategoria] = useState('');
   const [categorias, setCategorias] = useState([]);
   const [presupuesto, setPresupuesto] = useState('');
+  
+  const getTodayString = () => new Date().toISOString().split('T')[0];
+  
+  const [fechaInicio, setFechaInicio] = useState(getTodayString());
   const [fechaCompromiso, setFechaCompromiso] = useState('');
   const [fechaPrimerAvance, setFechaPrimerAvance] = useState('');
+  
   const [userId, setUserId] = useState('');
   const navigate = useNavigate();
 
@@ -24,29 +29,64 @@ export default function CrearProyecto() {
     if (uid) setUserId(uid);
   }, []);
 
+  // --- NUEVO HANDLER PARA PRESUPUESTO ---
+  // Esto filtra la entrada para permitir solo números enteros
+  const handlePresupuestoChange = (e) => {
+    const value = e.target.value;
+    // Elimina cualquier carácter que no sea un dígito (quita puntos, comas, signos, etc.)
+    const filteredValue = value.replace(/[^0-9]/g, '');
+    setPresupuesto(filteredValue);
+  };
+  // --- FIN NUEVO HANDLER ---
+
   const submit = async (e) => {
     e.preventDefault();
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayString();
 
-    if (!nombre || !descripcion || !categoria || !presupuesto || !fechaCompromiso || !fechaPrimerAvance) {
+    // --- BLOQUE DE VALIDACIÓN ---
+    if (!nombre || !descripcion || !categoria || !presupuesto || !fechaInicio || !fechaCompromiso || !fechaPrimerAvance) {
       alert('Complete todos los campos obligatorios.');
       return;
     }
-    if (fechaCompromiso < today || fechaPrimerAvance < today) {
-      alert('Las fechas no pueden ser anteriores a hoy.');
+    
+    // Validación 1: Fecha de inicio
+    if (fechaInicio < today) {
+      alert('La fecha de inicio no puede ser anterior a hoy.');
       return;
     }
-    if (Number(presupuesto) < 0 || isNaN(Number(presupuesto))) {
-      alert('El presupuesto debe ser un número positivo.');
+    
+    // Validación 2: Fechas de avance y compromiso vs Fecha de inicio
+    if (fechaCompromiso < fechaInicio) {
+      alert('La fecha de compromiso (fecha final) no puede ser anterior a la fecha de inicio.');
+      return;
+    }
+    if (fechaPrimerAvance < fechaInicio) {
+      alert('La fecha del primer avance no puede ser anterior a la fecha de inicio.');
       return;
     }
 
+    // Validación 3: Fecha de compromiso vs Fecha de primer avance
+    if (fechaCompromiso < fechaPrimerAvance) {
+      alert('La fecha de compromiso (final) no puede ser anterior a la fecha del primer avance.');
+      return;
+    }
+
+    // --- VALIDACIÓN DE PRESUPUESTO ACTUALIZADA ---
+    const presupuestoNum = Number(presupuesto);
+    if (isNaN(presupuestoNum) || presupuestoNum <= 0 || !Number.isInteger(presupuestoNum)) {
+      alert('El presupuesto debe ser un número entero positivo (sin comas ni puntos).');
+      return;
+    }
+    // --- FIN VALIDACIÓN ---
+
+    // Objeto de envío (sin duracion)
     const proyecto = {
       nombre,
       descripcion,
       categoria,
       userId,
-      presupuesto: Number(presupuesto),
+      presupuesto: presupuestoNum, // Enviamos el número validado
+      fechaInicio,
       fechaCompromiso,
       fechaPrimerAvance,
     };
@@ -58,7 +98,7 @@ export default function CrearProyecto() {
         body: JSON.stringify(proyecto),
       });
       if (!res.ok) {
-        const errorData = await res.json(); // Intenta leer el error JSON del backend
+        const errorData = await res.json(); 
         throw new Error(errorData.message || 'Error desconocido al crear el proyecto');
       }
       alert('Proyecto creado correctamente.');
@@ -69,20 +109,16 @@ export default function CrearProyecto() {
   };
 
   return (
-    // Aplicamos clases de Bootstrap para centrar y dar estilo
     <div className="crear-proyecto container mt-5 p-4 p-md-5 bg-light rounded shadow" style={{ maxWidth: '800px' }}>
       
-      {/* --- BOTÓN VOLVER AÑADIDO --- */}
       <div className="mb-3">
         <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
           &larr; Volver a Proyectos
         </Link>
       </div>
-      {/* --- FIN BOTÓN VOLVER --- */}
 
       <h2 className="text-center mb-4">Crear Proyecto</h2>
       <form onSubmit={submit}>
-        {/* Usamos el sistema de grid de Bootstrap para un formulario más limpio */}
         <div className="row g-3">
           <div className="col-12">
             <label htmlFor="nombre" className="form-label">Nombre del Proyecto</label>
@@ -103,18 +139,38 @@ export default function CrearProyecto() {
               ))}
             </select>
           </div>
+
+          {/* --- CAMPO PRESUPUESTO ACTUALIZADO --- */}
           <div className="col-md-6">
             <label htmlFor="presupuesto" className="form-label">Presupuesto</label>
-            <input type="number" id="presupuesto" className="form-control" min="0" step="0.01" value={presupuesto} onChange={e => setPresupuesto(e.target.value)} required />
+            <input 
+              type="text" // Cambiado a text para filtrar manualmente
+              pattern="[0-9]*" // Ayuda a teclados móviles a mostrar solo números
+              id="presupuesto" 
+              className="form-control" 
+              value={presupuesto} 
+              onChange={handlePresupuestoChange} // Usar el handler personalizado
+              placeholder="Ej: 5000000 (Solo números)"
+              required 
+            />
           </div>
+          {/* --- FIN CAMPO --- */}
+
           <div className="col-md-6">
-            <label htmlFor="fechaCompromiso" className="form-label">Fecha compromiso</label>
-            <input type="date" id="fechaCompromiso" className="form-control" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} required />
+            <label htmlFor="fechaInicio" className="form-label">Fecha de Inicio</label>
+            <input type="date" id="fechaInicio" className="form-control" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} min={getTodayString()} required />
           </div>
+          
           <div className="col-md-6">
             <label htmlFor="fechaPrimerAvance" className="form-label">Fecha primer avance</label>
-            <input type="date" id="fechaPrimerAvance" className="form-control" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} required />
+            <input type="date" id="fechaPrimerAvance" className="form-control" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} min={fechaInicio || getTodayString()} required />
           </div>
+
+          <div className="col-md-6">
+            <label htmlFor="fechaCompromiso" className="form-label">Fecha Compromiso (Final)</label>
+            <input type="date" id="fechaCompromiso" className="form-control" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} min={fechaPrimerAvance || fechaInicio || getTodayString()} required />
+          </div>
+
         </div>
         <div className="text-center mt-4">
           <button type="submit" className="btn btn-primary btn-lg crear-btn">Crear</button>

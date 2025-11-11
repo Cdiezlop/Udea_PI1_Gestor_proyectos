@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom"; // Se eliminó useNavigate no usado
+import { useParams, Link } from "react-router-dom"; 
 import { fetchProyectoDetailsService } from "../services/detalle-proyectosService";
 import "../styles/ProyectoDetalles.css";
 
@@ -9,7 +9,6 @@ function ProyectoDetalles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // --- FUNCIÓN DE COLOR AÑADIDA ---
   const getEstadoClass = (estado) => {
     switch (estado) {
       case 'Aceptado':
@@ -29,7 +28,6 @@ function ProyectoDetalles() {
         return 'bg-secondary'; // Gris
     }
   };
-  // --- FIN FUNCIÓN DE COLOR ---
 
   useEffect(() => {
     const fetchProyectoDetails = async () => {
@@ -61,10 +59,9 @@ function ProyectoDetalles() {
   }
 
   return (
-    // Contenedor principal con clases de Bootstrap para centrar y dar sombra
     <div className="container mt-5 p-4 p-md-5 bg-white rounded shadow-lg proyecto-detalles" style={{ maxWidth: '800px' }}>
       
-      <div className="mb-4"> {/* Aumentado el margen inferior */}
+      <div className="mb-4"> 
         <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
           &larr; Volver a Proyectos
         </Link>
@@ -79,9 +76,8 @@ function ProyectoDetalles() {
         <div className="card-body px-0 py-3">
           <p className="px-3"><strong>Descripción:</strong> {proyecto.descripcion}</p>
           <hr />
-          <div className="row px-3 gy-3"> {/* gy-3 añade espacio vertical en móvil */}
+          <div className="row px-3 gy-3"> 
             <div className="col-md-6">
-              {/* --- ESTADO CON COLOR AÑADIDO --- */}
               <p className="mb-0"><strong>Estado:</strong> 
                 <span className={`badge ms-2 fs-6 ${getEstadoClass(proyecto.estado)}`}>
                   {proyecto.estado}
@@ -94,11 +90,21 @@ function ProyectoDetalles() {
             <div className="col-md-6">
               <p className="mb-0"><strong>Presupuesto:</strong> ${new Intl.NumberFormat('es-CO').format(proyecto.presupuesto)}</p>
             </div>
+
+            {/* --- CAMPOS ACTUALIZADOS/AÑADIDOS --- */}
             <div className="col-md-6">
-              <p className="mb-0"><strong>Fecha de creación:</strong> {proyecto.fechaCreacion}</p>
+              <p className="mb-0"><strong>Fecha de Registro:</strong> {proyecto.fechaCreacion}</p>
             </div>
             <div className="col-md-6">
-              <p className="mb-0"><strong>Fecha compromiso:</strong> {proyecto.fechaCompromiso}</p>
+              <p className="mb-0"><strong>Fecha de Inicio:</strong> {proyecto.fechaInicio}</p>
+            </div>
+            <div className="col-md-6">
+              <p className="mb-0"><strong>Duración (Calculada):</strong> {proyecto.duracion} {proyecto.duracion === 1 ? 'mes' : 'meses'}</p>
+            </div>
+            {/* --- FIN CAMPOS --- */}
+
+            <div className="col-md-6">
+              <p className="mb-0"><strong>Fecha Compromiso (Final):</strong> {proyecto.fechaCompromiso}</p>
             </div>
             <div className="col-md-6">
               <p className="mb-0"><strong>Fecha primer avance:</strong> {proyecto.fechaPrimerAvance}</p>

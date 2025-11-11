@@ -21,13 +21,22 @@ public class ProyectoModel {
     private double presupuesto;
     private String dirigidoa_a;
     private List<String> compromisosId;
-    private LocalDate fechaCreacion;
+    
+    // --- CAMPO AÑADIDO (FECHA REGISTRO) ---
+    private LocalDate fechaCreacion; 
+    // --- FIN CAMPO AÑADIDO ---
+
     private LocalDate fechaModificacion;
 
     // --- CAMPOS AÑADIDOS ---
     private LocalDate fechaCompromiso;
     private LocalDate fechaPrimerAvance;
     // --- FIN CAMPOS AÑADIDOS ---
+
+    // --- CAMPO AÑADIDO (DURACIÓN CALCULADA) ---
+    private int duracion; 
+    private LocalDate fechaInicio;
+    // --- FIN CAMPO AÑADIDO ---
 
     private LocalDate fechaFinalizacion;
     private String estado;

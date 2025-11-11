@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Period; // Importar Period
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,21 +46,50 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setCategoria(crearProyectoDTO.getCategoria());
         proyecto.setPresupuesto(crearProyectoDTO.getPresupuesto());
         proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
+        
+        // --- LÓGICA DE FECHAS Y DURACIÓN ACTUALIZADA ---
+
+        // 1. Fecha de Registro (Automática)
         proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
 
+        // 2. Fechas del DTO
         proyecto.setFechaInicio(crearProyectoDTO.getFechaInicio());
-        proyecto.setDuracion(crearProyectoDTO.getDuracion());
         proyecto.setFechaCompromiso(crearProyectoDTO.getFechaCompromiso());
         proyecto.setFechaPrimerAvance(crearProyectoDTO.getFechaPrimerAvance());
 
-        if (crearProyectoDTO.getFechaInicio() != null && crearProyectoDTO.getDuracion() > 0) {
-            LocalDate fechaFinalizacion = crearProyectoDTO.getFechaInicio()
-                    .plusMonths(crearProyectoDTO.getDuracion());
-            proyecto.setFechaFinalizacion(fechaFinalizacion);
-        } else {
-            proyecto.setFechaFinalizacion(null);
+        // 3. Tratar fechaCompromiso como fechaFinalizacion
+        proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaCompromiso());
+
+        // 4. Calcular Duración (en meses)
+        long duracionMeses = 0;
+        if (crearProyectoDTO.getFechaInicio() != null && crearProyectoDTO.getFechaCompromiso() != null) {
+            // Validamos que la fecha de inicio no sea posterior a la de compromiso (aunque el front ya lo hace)
+            if (!crearProyectoDTO.getFechaInicio().isAfter(crearProyectoDTO.getFechaCompromiso())) {
+                
+                // Usamos Period para un cálculo más intuitivo de meses
+                Period period = Period.between(
+                    crearProyectoDTO.getFechaInicio(), 
+                    crearProyectoDTO.getFechaCompromiso()
+                );
+                
+                // Calculamos el total de meses
+                duracionMeses = period.getYears() * 12 + period.getMonths();
+                
+                // Si hay días restantes, se considera que entra en el siguiente mes (redondeo hacia arriba)
+                if (period.getDays() > 0) {
+                    duracionMeses++;
+                }
+                
+                // Si el periodo es 0 (mismo día) o cae en el mismo mes, lo contamos como 1 mes.
+                if (duracionMeses == 0) {
+                    duracionMeses = 1;
+                }
+            }
         }
+        proyecto.setDuracion((int) duracionMeses);
+        // --- FIN LÓGICA DE FECHAS ---
+
         proyecto.setEstado("Por revisar");
 
         List<String> compromisosIds = new ArrayList<>();
@@ -80,8 +110,8 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setCompromisosId(compromisosIds);
 
         Proyecto savedProyecto = proyectoRepository.save(proyecto);
-        log.info("✅ Proyecto creado con ID: {} y fecha finalización: {}",
-                savedProyecto.getId(), savedProyecto.getFechaFinalizacion());
+        log.info("Proyecto creado con ID: {} y duración calculada: {} meses",
+                savedProyecto.getId(), savedProyecto.getDuracion());
 
         return mapToModel(savedProyecto);
     }
@@ -133,13 +163,11 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
 
         proyecto.setEstado(cambioDeEstadoModel.getEstado());
-
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Solo procesar comentarios si se enviaron en el request
+        
         ComentariosDTO comentariosDTO = cambioDeEstadoModel.getComentarios();
         if (comentariosDTO != null && comentariosDTO.getComentario() != null && !comentariosDTO.getComentario().isEmpty()) {
             ComentariosModel comentario = new ComentariosModel();
-            comentario.setUser(comentariosDTO.getUser()); // Asumimos que el frontend enviará el usuario
+            comentario.setUser(comentariosDTO.getUser()); 
             comentario.setFechaComentarios(fechaActual.getCurrentDate());
             comentario.setComentario(comentariosDTO.getComentario());
 
@@ -150,15 +178,15 @@ public class ProyectoServiceImpl implements ProyectoService {
             } else {
                 comentario.setTipoComentario("Actualización de estado");
             }
-            proyecto.setComentarios(comentario); // Anade el nuevo comentario
+            proyecto.setComentarios(comentario); 
         }
-        // --- FIN DE LA CORRECCIÓN ---
 
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
         Proyecto updatedProyecto = proyectoRepository.save(proyecto);
         return mapToModel(updatedProyecto);
     }
 
+    // --- MÉTODO MAPTOMODEL ACTUALIZADO ---
     private ProyectoModel mapToModel(Proyecto proyecto) {
         ProyectoModel model = new ProyectoModel();
         model.setId(proyecto.getId());
@@ -168,18 +196,21 @@ public class ProyectoServiceImpl implements ProyectoService {
         model.setCategoria(proyecto.getCategoria());
         model.setPresupuesto(proyecto.getPresupuesto());
         model.setDirigidoa_a(proyecto.getDirigidoa_a());
-        model.setFechaCreacion(proyecto.getFechaCreacion());
+        
+        // Mapeamos los nuevos campos
+        model.setFechaCreacion(proyecto.getFechaCreacion()); // Fecha de Registro
+        model.setFechaInicio(proyecto.getFechaInicio());
+        model.setDuracion(proyecto.getDuracion()); // Duración calculada
+        
         model.setFechaModificacion(proyecto.getFechaModificacion());
         model.setFechaFinalizacion(proyecto.getFechaFinalizacion());
         model.setEstado(proyecto.getEstado());
         model.setComentarios(proyecto.getComentarios());
         model.setCompromisosId(proyecto.getCompromisosId());
-
-        // --- CORRECCIÓN DEL MAPEO (PARA MOSTRAR FECHAS) ---
+        
         model.setFechaCompromiso(proyecto.getFechaCompromiso());
         model.setFechaPrimerAvance(proyecto.getFechaPrimerAvance());
-        // --- FIN CORRECCIÓN ---
-
+        
         return model;
     }
 

@@ -16,11 +16,10 @@ public class CrearProyectoDTO {
     private List<CrearCompromisoDTO> compromisos;
 
     // --- CAMPOS CORREGIDOS ---
-    // Cambiamos de LocalDateTime a LocalDate para que coincida con el input "date"
+    // Se elimina 'duracion' ya que será calculada
     private LocalDate fechaInicio;
-    private LocalDate fechaCompromiso;
+    private LocalDate fechaCompromiso; // Esta se usará como fecha final
     private LocalDate fechaPrimerAvance;
-    private int duracion;
     // --- FIN CAMPOS CORREGIDOS ---
 
 }
