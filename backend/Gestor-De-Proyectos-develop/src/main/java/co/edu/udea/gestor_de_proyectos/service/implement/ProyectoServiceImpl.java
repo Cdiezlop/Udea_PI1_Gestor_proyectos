@@ -2,11 +2,13 @@ package co.edu.udea.gestor_de_proyectos.service.implement;
 
 import co.edu.udea.gestor_de_proyectos.entity.Compromisos;
 import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
+import co.edu.udea.gestor_de_proyectos.entity.Responsable;
 import co.edu.udea.gestor_de_proyectos.model.comentarios.ComentariosModel;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.ComentariosDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearCompromisoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
+import co.edu.udea.gestor_de_proyectos.model.dto.CrearResponsableDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
 import co.edu.udea.gestor_de_proyectos.repository.CompromisosRepository;
@@ -18,14 +20,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
-import java.time.Period; // Importar Period
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,147 +49,121 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setCategoria(crearProyectoDTO.getCategoria());
         proyecto.setPresupuesto(crearProyectoDTO.getPresupuesto());
         proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
+        proyecto.setObservacionesIniciales(crearProyectoDTO.getObservacionesIniciales());
         
-        // --- LÓGICA DE FECHAS Y DURACIÓN ACTUALIZADA ---
-
-        // 1. Fecha de Registro (Automática)
         proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
-
-        // 2. Fechas del DTO
         proyecto.setFechaInicio(crearProyectoDTO.getFechaInicio());
         proyecto.setFechaCompromiso(crearProyectoDTO.getFechaCompromiso());
         proyecto.setFechaPrimerAvance(crearProyectoDTO.getFechaPrimerAvance());
-
-        // 3. Tratar fechaCompromiso como fechaFinalizacion
         proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaCompromiso());
 
-        // 4. Calcular Duración (en meses)
         long duracionMeses = 0;
         if (crearProyectoDTO.getFechaInicio() != null && crearProyectoDTO.getFechaCompromiso() != null) {
-            // Validamos que la fecha de inicio no sea posterior a la de compromiso (aunque el front ya lo hace)
             if (!crearProyectoDTO.getFechaInicio().isAfter(crearProyectoDTO.getFechaCompromiso())) {
-                
-                // Usamos Period para un cálculo más intuitivo de meses
-                Period period = Period.between(
-                    crearProyectoDTO.getFechaInicio(), 
-                    crearProyectoDTO.getFechaCompromiso()
-                );
-                
-                // Calculamos el total de meses
+                Period period = Period.between(crearProyectoDTO.getFechaInicio(), crearProyectoDTO.getFechaCompromiso());
                 duracionMeses = period.getYears() * 12 + period.getMonths();
-                
-                // Si hay días restantes, se considera que entra en el siguiente mes (redondeo hacia arriba)
-                if (period.getDays() > 0) {
-                    duracionMeses++;
-                }
-                
-                // Si el periodo es 0 (mismo día) o cae en el mismo mes, lo contamos como 1 mes.
-                if (duracionMeses == 0) {
-                    duracionMeses = 1;
-                }
+                if (period.getDays() > 0) duracionMeses++;
+                if (duracionMeses == 0) duracionMeses = 1;
             }
         }
         proyecto.setDuracion((int) duracionMeses);
-        // --- FIN LÓGICA DE FECHAS ---
-
         proyecto.setEstado("Por revisar");
 
         List<String> compromisosIds = new ArrayList<>();
-
-        if (crearProyectoDTO.getCompromisos() != null && !crearProyectoDTO.getCompromisos().isEmpty()) {
-            for (CrearCompromisoDTO compromisoDTO : crearProyectoDTO.getCompromisos()) {
-                Compromisos compromiso = new Compromisos();
-                compromiso.setId(generateId(null));
-                compromiso.setDescripcion(compromisoDTO.getDescripcion());
-                compromiso.setEstado(compromisoDTO.getEstado());
-                compromiso.setFechaEstimada(compromisoDTO.getFechaEstimada());
-                compromiso.setFechaReal(fechaActual.getCurrentDate());
-                Compromisos saved = compromisosRepository.save(compromiso);
-                compromisosIds.add(saved.getId());
+        if (crearProyectoDTO.getCompromisos() != null) {
+            for (CrearCompromisoDTO dto : crearProyectoDTO.getCompromisos()) {
+                Compromisos c = new Compromisos();
+                c.setId(generateId(null));
+                c.setDescripcion(dto.getDescripcion());
+                c.setEstado(dto.getEstado());
+                c.setFechaEstimada(dto.getFechaEstimada());
+                c.setFechaReal(fechaActual.getCurrentDate());
+                compromisosIds.add(compromisosRepository.save(c).getId());
             }
         }
-
         proyecto.setCompromisosId(compromisosIds);
 
-        Proyecto savedProyecto = proyectoRepository.save(proyecto);
-        log.info("Proyecto creado con ID: {} y duración calculada: {} meses",
-                savedProyecto.getId(), savedProyecto.getDuracion());
+        List<Responsable> responsables = new ArrayList<>();
+        if (crearProyectoDTO.getResponsables() != null) {
+            for (CrearResponsableDTO dto : crearProyectoDTO.getResponsables()) {
+                Responsable r = new Responsable();
+                r.setNombre(dto.getNombre());
+                r.setEdad(dto.getEdad());
+                r.setRol(dto.getRol());
+                r.setTelefono(dto.getTelefono());
+                r.setCorreo(dto.getCorreo());
+                responsables.add(r);
+            }
+        }
+        proyecto.setResponsables(responsables);
 
+        Proyecto savedProyecto = proyectoRepository.save(proyecto);
         return mapToModel(savedProyecto);
     }
 
-
     @Override
     public List<ProyectoModel> listarProyectosPorUsuario(String userId) {
-        List<Proyecto> proyectos = proyectoRepository.findAllByUserId(userId);
-        return proyectos.stream().map(this::mapToModel).toList();
+        return proyectoRepository.findAllByUserId(userId).stream().map(this::mapToModel).toList();
     }
 
     @Override
     public ProyectoModel proyectoPorId(String proyectoId) {
-        Optional<Proyecto> proyectoOptional = proyectoRepository.findById(proyectoId);
-        Proyecto proyecto = proyectoOptional.orElseThrow(() ->
-                new RuntimeException("El proyecto con ID " + proyectoId + " no existe"));
-        return mapToModel(proyecto);
+        return proyectoRepository.findById(proyectoId)
+                .map(this::mapToModel)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
     @Override
     public Page<ProyectoModel> proyectosPaginados(int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size);
-        Page<Proyecto> proyectosPage = proyectoRepository.findAll(pageable);
-        return proyectosPage.map(this::mapToModel);
+        return proyectoRepository.findAll(PageRequest.of(page, size)).map(this::mapToModel);
     }
 
     @Override
-    public ProyectoModel actualizarProyecto(String id,  ActualizarProyectoDTO actualizarProyectoDTO) {
+    public ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO dto) {
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
-        proyecto.setNombre(actualizarProyectoDTO.getNombre());
-        proyecto.setCategoria(actualizarProyectoDTO.getCategoria());
+        proyecto.setNombre(dto.getNombre());
+        proyecto.setCategoria(dto.getCategoria());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
-        proyecto.setEstado(actualizarProyectoDTO.getEstado());
-
-        Proyecto updatedProyecto = proyectoRepository.save(proyecto);
-        return mapToModel(updatedProyecto);
+        proyecto.setEstado(dto.getEstado());
+        return mapToModel(proyectoRepository.save(proyecto));
     }
 
     @Override
     public List<ProyectoModel> listarProyectos() {
-        List<Proyecto> proyectos = proyectoRepository.findAll();
-        return proyectos.stream().map(this::mapToModel).toList();
+        return proyectoRepository.findAll().stream().map(this::mapToModel).toList();
     }
 
     @Override
-    public ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel) {
+    public ProyectoModel cambiarEstado(String id, CambioDeEstadoModel model) {
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
-
-        proyecto.setEstado(cambioDeEstadoModel.getEstado());
         
-        ComentariosDTO comentariosDTO = cambioDeEstadoModel.getComentarios();
-        if (comentariosDTO != null && comentariosDTO.getComentario() != null && !comentariosDTO.getComentario().isEmpty()) {
-            ComentariosModel comentario = new ComentariosModel();
-            comentario.setUser(comentariosDTO.getUser()); 
-            comentario.setFechaComentarios(fechaActual.getCurrentDate());
-            comentario.setComentario(comentariosDTO.getComentario());
-
-            if ("Aceptado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
-                comentario.setTipoComentario("Proyecto aceptado");
-            } else if ("Rechazado".equalsIgnoreCase(cambioDeEstadoModel.getEstado())) {
-                comentario.setTipoComentario("Proyecto rechazado");
-            } else {
-                comentario.setTipoComentario("Actualización de estado");
-            }
-            proyecto.setComentarios(comentario); 
+        ComentariosDTO cDto = model.getComentarios();
+        
+        // Validación obligatoria de observación para el administrador
+        if (cDto == null || cDto.getComentario() == null || cDto.getComentario().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Es obligatorio agregar una observación para cambiar el estado.");
         }
 
+        proyecto.setEstado(model.getEstado());
+        
+        ComentariosModel cm = new ComentariosModel();
+        cm.setUser(cDto.getUser());
+        cm.setFechaComentarios(fechaActual.getCurrentDate());
+        cm.setComentario(cDto.getComentario());
+        
+        if ("Aceptado".equalsIgnoreCase(model.getEstado())) cm.setTipoComentario("Proyecto aceptado");
+        else if ("Rechazado".equalsIgnoreCase(model.getEstado())) cm.setTipoComentario("Proyecto rechazado");
+        else cm.setTipoComentario("Actualización de estado");
+        
+        proyecto.setComentarios(cm);
+        
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
-        Proyecto updatedProyecto = proyectoRepository.save(proyecto);
-        return mapToModel(updatedProyecto);
+        return mapToModel(proyectoRepository.save(proyecto));
     }
 
-    // --- MÉTODO MAPTOMODEL ACTUALIZADO ---
     private ProyectoModel mapToModel(Proyecto proyecto) {
         ProyectoModel model = new ProyectoModel();
         model.setId(proyecto.getId());
@@ -196,21 +173,18 @@ public class ProyectoServiceImpl implements ProyectoService {
         model.setCategoria(proyecto.getCategoria());
         model.setPresupuesto(proyecto.getPresupuesto());
         model.setDirigidoa_a(proyecto.getDirigidoa_a());
-        
-        // Mapeamos los nuevos campos
-        model.setFechaCreacion(proyecto.getFechaCreacion()); // Fecha de Registro
+        model.setFechaCreacion(proyecto.getFechaCreacion());
         model.setFechaInicio(proyecto.getFechaInicio());
-        model.setDuracion(proyecto.getDuracion()); // Duración calculada
-        
+        model.setDuracion(proyecto.getDuracion());
         model.setFechaModificacion(proyecto.getFechaModificacion());
         model.setFechaFinalizacion(proyecto.getFechaFinalizacion());
         model.setEstado(proyecto.getEstado());
         model.setComentarios(proyecto.getComentarios());
         model.setCompromisosId(proyecto.getCompromisosId());
-        
         model.setFechaCompromiso(proyecto.getFechaCompromiso());
         model.setFechaPrimerAvance(proyecto.getFechaPrimerAvance());
-        
+        model.setResponsables(proyecto.getResponsables());
+        model.setObservacionesIniciales(proyecto.getObservacionesIniciales());
         return model;
     }
 

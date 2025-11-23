@@ -1,96 +1,103 @@
 # Gestor de Proyectos
-Proyecto Integrador I – Universidad de Antioquia  
-Aplicación web para la gestión de proyectos con Spring Boot (Backend), React (Frontend) y MongoDB (Base de Datos).
+**Proyecto Integrador I – Universidad de Antioquia** Aplicación web para la gestión integral de proyectos, desarrollada con una arquitectura moderna de microservicios monolíticos utilizando Spring Boot (Backend) y React (Frontend), respaldada por una base de datos no relacional MongoDB.
+
+El sistema permite la administración de usuarios, roles (Solicitante y Revisor), y el ciclo de vida completo de un proyecto, desde su creación con múltiples responsables hasta su aprobación y seguimiento.
 
 ---
 
 ## Tecnologías Utilizadas
 
 * **Backend:** Java 17, Spring Boot 3.x, Gradle
-* **Frontend:** React 18, Node.js 18 LTS
+* **Frontend:** React 18, Node.js 18 LTS, Bootstrap
 * **Base de Datos:** MongoDB 6.x
 * **Contenedores:** Docker y Docker Compose
 
 ---
 
-## Datos de Acceso
+## Datos de Acceso (Credenciales)
 
-Una vez que la aplicación esté corriendo (local o Docker), puedes usar el usuario administrador inicial:
+El sistema cuenta con datos semilla y de prueba para validar todas las funcionalidades.
 
-* **Usuario:** `admin`
-* **Contraseña:** `admin123`
-* **Base de Datos (local):** `mongodb://localhost:27017/gestor_db`
+### Usuario Administrador (Rol: Revisor)
+| Rol | Usuario | Contraseña | Correo |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin` | `admin123` | admin@gestorproyectos.com |
+
+### Usuarios Básicos (Rol: Solicitante)
+Estos usuarios se generan automáticamente al cargar el script `datos_prueba.js`.
+
+| Usuario | Contraseña | Rol |
+| :--- | :--- | :--- |
+| `laura.res` | `123` | Básico |
+| `carlos.men` | `123` | Básico |
+| `ana.gom` | `123` | Básico |
+| `jorge.vel` | `123` | Básico |
+| `sofia.ver` | `123` | Básico |
+
+**Conexión BD Local:** `mongodb://localhost:27017/gestor_db`
 
 ---
 
 ## Opción 1: Ejecución con Docker (Recomendado)
 
-Este método es el más sencillo ya que no requiere instalar Java, Node o MongoDB manualmente en tu máquina.
+Método automatizado que no requiere instalar dependencias manualmente.
 
-### Requisitos Previos (Docker)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) para Windows, Mac o Linux.
+### Requisitos
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
 
-### Pasos para Ejecutar con Docker
-
-1.  **Clonar el Repositorio:**
+### Pasos
+1.  **Clonar el repositorio:**
     ```bash
     git clone [https://github.com/Cdiezlop/Udea_PI1_Gestor_proyectos.git](https://github.com/Cdiezlop/Udea_PI1_Gestor_proyectos.git) GESTOR_DE_PROYECTOS
     cd GESTOR_DE_PROYECTOS
     ```
-
-2.  **Dar Permisos de Ejecución (Solo Linux/Mac):**
-    Si estás en Linux o macOS, asegúrate de que el script de Gradle tenga permisos de ejecución:
-    ```bash
-    chmod +x backend/Gestor-De-Proyectos-develop/gradlew
-    ```
-
-3.  **Construir y Levantar los Contenedores:**
-    Este comando construirá las imágenes del backend y frontend, iniciará los tres contenedores (mongo, backend, frontend) y cargará los datos iniciales en la base de datos.
+2.  **Ejecutar:**
     ```bash
     docker compose up --build
     ```
-
-4.  **Acceder a la Aplicación:**
-    * **Frontend (React):** [http://localhost:3000](http://localhost:3000)
-    * **Backend (API):** [http://localhost:8088/gestor](http://localhost:8088/gestor)
+    Esto levantará MongoDB, cargará los datos iniciales, y desplegará el Backend (puerto 8088) y Frontend (puerto 3000).
 
 ---
 
 ## Opción 2: Ejecución Local (Windows 10/11)
 
-Este método requiere que instales y configures todo el software manualmente en tu máquina.
+Guía detallada para ejecutar el entorno de desarrollo en Windows.
 
-### Requisitos Previos (Local)
-1.  **Java JDK 17:** Verifica con `java -version`.
-2.  **Node.js 18.x LTS:** Verifica con `node -v` (debe ser v18.x) y `npm -v`.
-3.  **MongoDB 6.x Community Server:** Debe estar instalado y corriendo como un servicio de Windows.
-4.  **MongoDB Shell (`mongosh`):** Verifica con `mongosh --version`. (Si usaste el instalador de MongoDB, asegúrate de que `mongosh.exe` esté en tu PATH del sistema).
+### Requisitos Previos
+1.  **Java JDK 17**
+2.  **Node.js 18.x LTS**
+3.  **MongoDB 6.x** (Corriendo como servicio)
+4.  **MongoDB Shell (`mongosh`)**
 
-### Pasos para Ejecutar Localmente
+### Pasos de Ejecución
 
-1.  **Clonar el Repositorio:**
-    ```cmd
-    git clone [https://github.com/Cdiezlop/Udea_PI1_Gestor_proyectos.git](https://github.com/Cdiezlop/Udea_PI1_Gestor_proyectos.git) GESTOR_DE_PROYECTOS
-    cd GESTOR_DE_PROYECTOS
-    ```
+#### 1. Preparación de la Base de Datos
+Abre una terminal (PowerShell o CMD) en la raíz del proyecto y ejecuta los siguientes comandos para **limpiar** la base de datos y **cargar** datos frescos.
 
-2.  **Corregir Archivos de Configuración (¡Importante!):**
-    * **Backend:** Abre `backend\Gestor-De-Proyectos-develop\src\main\resources\application.yml` y asegúrate de que la URI apunte a `gestor_db`:
-        ```yaml
-        uri: mongodb://localhost:27017/gestor_db
-        ```
-    * **Backend (CORS):** Sigue los pasos de depuración para añadir el archivo `CorsConfig.java` si encuentras errores de CORS.
-    * **Frontend:** Asegúrate de que los archivos en `frontend\frontend-gestorProyectos-develop\src\services\` y `components\` apunten a la URL correcta (`${API_BASE}/api/...`).
+**A. Limpiar Base de Datos:**
+```bash
+mongosh "mongodb://localhost:27017/gestor_db" --eval "db.proyectos.deleteMany({}); db.compromiso.deleteMany({}); db.categoria.deleteMany({}); db.estado.deleteMany({}); db.usuario.deleteMany({});"
+```
 
-3.  **Cargar Datos en MongoDB:**
-    Abre una terminal (`cmd`) en la raíz del proyecto (`GESTOR_DE_PROYECTOS`) y ejecuta:
-    ```cmd
-    mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\categorias.js
-    mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\estados.js
-    mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\usuarioAdmin.js
-    ```
+**B. Cargar Datos Iniciales (Configuración y Admin):**
+```bash
+mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\categorias.js
+```
 
-4.  **Iniciar el Backend:**
+```bash
+mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\estados.js
+```
+
+```bash
+mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\usuarioAdmin.js
+```
+
+**C. Cargar Datos de Prueba (Usuarios y Proyectos):**
+```bash
+mongosh "mongodb://localhost:27017/gestor_db" --file backend\Gestor-De-Proyectos-develop\scripts\datos_prueba.js
+```
+
+#### 2.  **Iniciar el Backend:**
     * Abre una **NUEVA** terminal.
     * Navega a la carpeta del backend y ejecuta:
         ```cmd
@@ -99,7 +106,7 @@ Este método requiere que instales y configures todo el software manualmente en 
         ```
     * *Deja esta terminal abierta.*
 
-5.  **Iniciar el Frontend:**
+#### 3.  **Iniciar el Frontend:**
     * Abre una **TERCERA** terminal.
     * Navega a la carpeta del frontend, instala dependencias (¡incluyendo bootstrap!) e inicia:
         ```cmd
@@ -110,10 +117,11 @@ Este método requiere que instales y configures todo el software manualmente en 
         ```
     * *Deja esta terminal abierta.*
 
-6.  **Acceder a la Aplicación:**
+#### 4.  **Acceder a la Aplicación:**
     * Tu navegador debería abrirse automáticamente en [http://localhost:3000](http://localhost:3000).
 
+
 ---
-### Autores
+# Autores
 - Cristian Diez
 - Jhoan Villa

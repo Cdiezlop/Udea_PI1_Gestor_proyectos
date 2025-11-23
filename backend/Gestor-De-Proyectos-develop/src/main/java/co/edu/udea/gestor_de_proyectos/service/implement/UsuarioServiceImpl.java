@@ -1,6 +1,5 @@
 package co.edu.udea.gestor_de_proyectos.service.implement;
 
-
 import co.edu.udea.gestor_de_proyectos.entity.Usuario;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearUsuarioDTO;
@@ -40,6 +39,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioModel crearUsuario(CrearUsuarioDTO crearUsuarioDTO) {
+        if(usuarioRepository.findByUser(crearUsuarioDTO.getUser()).isPresent()){
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de usuario ya existe.");
+        }
+
         Usuario usuario = new Usuario();
         usuario.setId(generateId(null));
         usuario.setNombre(crearUsuarioDTO.getNombre());
@@ -53,6 +56,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setUser(crearUsuarioDTO.getUser());
         usuario.setPassword(crearUsuarioDTO.getPassword());
         usuario.setRol("Basico");
+
         Usuario savedUsuario = usuarioRepository.save(usuario);
         return mapToModel(savedUsuario);
     }
