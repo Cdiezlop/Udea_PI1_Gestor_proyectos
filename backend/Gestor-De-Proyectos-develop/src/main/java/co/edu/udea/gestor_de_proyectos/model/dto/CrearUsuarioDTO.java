@@ -25,7 +25,6 @@ public class CrearUsuarioDTO {
 
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
-    private String email;
     private String ciudad;
     
     @NotBlank(message = "El usuario es obligatorio")
