@@ -6,17 +6,21 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/GestorProyectos
+      uri: mongodb://localhost:27017/gestor_db
   mail:
-    host: smtp.gmail.com
+    host: smtp.office365.com
     port: 587
-    username: jhoanvilla55@gmail.com
-    password: zcjhtuslhrcpdmkg
+    username: correonopersonal10@hotmail.com
+    password: zhvvxvunucatafzn  # Contraseña de aplicacion generada en hotmail
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: true # Muestra logs detallados del envío
 
-# Logs y configuración adicional
 logging:
   level:
     org.springframework: INFO

@@ -19,11 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Tgl. Jhoan Villa.
- * Email: jhoan.villa
- * @version Id: <b>gestor-de-proyectos</b>  01/09/2025, 10:33 a. m.
- **/
 @RestController
 @RequestMapping("/api/usuario")
 @RequiredArgsConstructor
@@ -88,19 +83,17 @@ public class UsuarioController {
             changePasswordDTO.getConfirmPassword()
         );
         
-        // Crear el mapa de respuesta
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Contraseña actualizada exitosamente.");
         response.put("success", true);
-
-        // Devolver el mapa como respuesta
         return ResponseEntity.ok(response);
     }
 
+    // --- CAMBIO: Recibe 'username' en lugar de email ---
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-        usuarioService.solicitarRecuperacion(email);
-        return ResponseEntity.ok("Correo enviado");
+    public ResponseEntity<?> forgotPassword(@RequestParam String username) {
+        usuarioService.solicitarRecuperacion(username);
+        return ResponseEntity.ok("Código de recuperación enviado al correo asociado.");
     }
 
     @PostMapping("/reset-password")

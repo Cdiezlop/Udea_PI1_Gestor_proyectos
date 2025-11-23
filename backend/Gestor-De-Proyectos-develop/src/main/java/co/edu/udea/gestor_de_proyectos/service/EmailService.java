@@ -6,21 +6,36 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 /**
- * @author Tgl. Jhoan Villa.
- * Email: jhoan.villa@dev-codes.io
- * @version Id: Udea_PI1_Gestor_proyectos 23/11/2025, 2:04 p. m.
- **/
+ * Servicio para envío de correos usando Hotmail/Outlook.
+ */
 @Service
 public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
 
+    // Correo remitente (DEBE coincidir con el application.yml)
+    private static final String REMITENTE = "correonopersonal10@hotmail.com";
+
     public void sendEmail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        System.out.println("\n--- Intentando enviar correo a: " + to + " ---");
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(REMITENTE); // OBLIGATORIO para Hotmail
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(text);
+            
+            mailSender.send(message);
+            
+            System.out.println(">> ¡Correo enviado exitosamente por Hotmail!");
+        } catch (Exception e) {
+            System.err.println(">> ERROR CRÍTICO enviando correo: " + e.getMessage());
+            System.err.println(">> Revisa: 1. Contraseña de aplicación. 2. Bloqueo de Microsoft.");
+            
+            // Imprimir token en consola por si falla el envío
+            System.out.println(">> CONTENIDO DEL MENSAJE (Respaldo):\n" + text);
+        }
     }
 }
