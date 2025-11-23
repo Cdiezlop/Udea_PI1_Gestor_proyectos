@@ -1,47 +1,55 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Importa Link
-import { recuperarContrasenaService } from "../services/recuperarContrasenaService";
+import { useNavigate, Link } from "react-router-dom";
+import { 
+  solicitarRecuperacionService, 
+  restablecerContrasenaService 
+} from "../services/recuperarContrasenaService";
 import "../styles/RecuperarContrasena.css";
 
 function RecuperarContrasena() {
-  const [formData, setFormData] = useState({
-    usuario: "",
-    nuevaContrasena: "",
-    confirmarContrasena: "",
-  });
+  const [step, setStep] = useState(1); // 1: Solicitar correo, 2: Cambiar contraseña
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  // Paso 1: Enviar correo para pedir código
+  const handleRequestCode = async (e) => {
+    e.preventDefault();
+    if (!email) return alert("Por favor ingrese su correo.");
+
+    setLoading(true);
+    try {
+      await solicitarRecuperacionService(email);
+      alert(`Se ha enviado un código de recuperación a ${email}`);
+      setStep(2); // Avanzar al siguiente paso
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = async (e) => {
+  // Paso 2: Restablecer con código y nueva clave
+  const handleResetPassword = async (e) => {
     e.preventDefault();
-
-    if (formData.nuevaContrasena !== formData.confirmarContrasena) {
-      alert("Las contraseñas no coinciden.");
-      return;
+    if (!token || !newPassword || !confirmPassword) {
+      return alert("Todos los campos son obligatorios.");
+    }
+    if (newPassword !== confirmPassword) {
+      return alert("Las contraseñas no coinciden.");
     }
 
     setLoading(true);
-
     try {
-      await recuperarContrasenaService(
-        formData.usuario,
-        formData.nuevaContrasena,
-        formData.confirmarContrasena
-      );
-
-      alert("Contraseña actualizada correctamente");
-      setFormData({ usuario: "", nuevaContrasena: "", confirmarContrasena: "" });
-      
+      // Solo enviamos token y nueva contraseña al servicio
+      await restablecerContrasenaService(token, newPassword);
+      alert("¡Contraseña actualizada con éxito!");
       navigate("/login");
     } catch (error) {
-      alert(error.message || "Error al actualizar la contraseña");
+      alert(error.message);
     } finally {
       setLoading(false);
     }
@@ -50,66 +58,93 @@ function RecuperarContrasena() {
   return (
     <div className="recuperar-contrasena-page">
       <div className="recuperar-contrasena-container">
-        <h2>Recuperar contraseña</h2>
+        <h2>Recuperación de Cuenta</h2>
 
-        <form onSubmit={handleSubmit}>
-          <div className="input-field">
-            <label htmlFor="usuario">Usuario</label>
-            <input
-              type="text"
-              id="usuario"
-              name="usuario"
-              value={formData.usuario}
-              onChange={handleChange}
-              placeholder="Introduce tu usuario"
-              required
-              disabled={loading}
-            />
-          </div>
+        {step === 1 && (
+          <form onSubmit={handleRequestCode}>
+            <p className="text-muted text-center mb-4">
+              Ingrese su correo electrónico registrado. Le enviaremos un código de seguridad.
+            </p>
+            <div className="input-field">
+              <label htmlFor="email">Correo Electrónico</label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ejemplo@correo.com"
+                required
+                disabled={loading}
+              />
+            </div>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? "Enviando..." : "Enviar Código"}
+            </button>
+          </form>
+        )}
 
-          <div className="input-field">
-            <label htmlFor="nuevaContrasena">Nueva contraseña</label>
-            <input
-              type="password"
-              id="nuevaContrasena"
-              name="nuevaContrasena"
-              value={formData.nuevaContrasena}
-              onChange={handleChange}
-              placeholder="Introduce tu nueva contraseña"
-              required
-              disabled={loading}
-            />
-          </div>
+        {step === 2 && (
+          <form onSubmit={handleResetPassword}>
+            <p className="text-muted text-center mb-4">
+              Ingrese el código recibido y su nueva contraseña.
+            </p>
+            <div className="input-field">
+              <label htmlFor="token">Código de Verificación</label>
+              <input
+                type="text"
+                id="token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Código recibido"
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="input-field">
+              <label htmlFor="newPassword">Nueva Contraseña</label>
+              <input
+                type="password"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Nueva contraseña"
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="input-field">
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita la contraseña"
+                required
+                disabled={loading}
+              />
+            </div>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? "Actualizando..." : "Cambiar Contraseña"}
+            </button>
+            
+            {/* Opción para volver atrás si se equivocó de correo */}
+            <div className="text-center mt-2">
+                <button 
+                    type="button" 
+                    className="btn btn-link btn-sm text-decoration-none"
+                    onClick={() => setStep(1)}
+                    disabled={loading}
+                >
+                    ¿No recibiste el código? Intentar de nuevo
+                </button>
+            </div>
+          </form>
+        )}
 
-          <div className="input-field">
-            <label htmlFor="confirmarContrasena">Confirmar contraseña</label>
-            <input
-              type="password"
-              id="confirmarContrasena"
-              name="confirmarContrasena"
-              value={formData.confirmarContrasena}
-              onChange={handleChange}
-              placeholder="Confirma tu nueva contraseña"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn-submit"
-            disabled={loading}
-          >
-            {loading ? "Actualizando..." : "Actualizar contraseña"}
-          </button>
-        </form>
-
-        {/* --- BOTÓN VOLVER AÑADIDO --- */}
         <div className="text-center mt-3">
           <Link to="/login">Volver a Inicio de Sesión</Link>
         </div>
-        {/* --- FIN BOTÓN VOLVER --- */}
-        
       </div>
     </div>
   );
