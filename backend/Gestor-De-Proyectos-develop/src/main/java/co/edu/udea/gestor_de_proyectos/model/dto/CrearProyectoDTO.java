@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class CrearProyectoDTO {
-
     private String nombre;
     private String descripcion;
     private String userId;
@@ -15,11 +14,10 @@ public class CrearProyectoDTO {
     private String dirigidoa_a;
     private List<CrearCompromisoDTO> compromisos;
 
-    // --- CAMPOS CORREGIDOS ---
-    // Se elimina 'duracion' ya que será calculada
     private LocalDate fechaInicio;
-    private LocalDate fechaCompromiso; // Esta se usará como fecha final
+    private LocalDate fechaCompromiso;
     private LocalDate fechaPrimerAvance;
-    // --- FIN CAMPOS CORREGIDOS ---
-
+    
+    private List<CrearResponsableDTO> responsables;
+    private String observacionesIniciales; // Observación del creador
 }

@@ -9,12 +9,17 @@ export default function CrearProyecto() {
   const [categoria, setCategoria] = useState('');
   const [categorias, setCategorias] = useState([]);
   const [presupuesto, setPresupuesto] = useState('');
+  const [observacionesIniciales, setObservacionesIniciales] = useState('');
   
   const getTodayString = () => new Date().toISOString().split('T')[0];
   
   const [fechaInicio, setFechaInicio] = useState(getTodayString());
   const [fechaCompromiso, setFechaCompromiso] = useState('');
   const [fechaPrimerAvance, setFechaPrimerAvance] = useState('');
+  
+  const [responsables, setResponsables] = useState([
+    { nombre: '', edad: '', rol: '', telefono: '', correo: '' }
+  ]);
   
   const [userId, setUserId] = useState('');
   const navigate = useNavigate();
@@ -29,66 +34,74 @@ export default function CrearProyecto() {
     if (uid) setUserId(uid);
   }, []);
 
-  // --- NUEVO HANDLER PARA PRESUPUESTO ---
-  // Esto filtra la entrada para permitir solo números enteros
   const handlePresupuestoChange = (e) => {
-    const value = e.target.value;
-    // Elimina cualquier carácter que no sea un dígito (quita puntos, comas, signos, etc.)
-    const filteredValue = value.replace(/[^0-9]/g, '');
+    const filteredValue = e.target.value.replace(/[^0-9]/g, '');
     setPresupuesto(filteredValue);
   };
-  // --- FIN NUEVO HANDLER ---
+
+  const handleResponsableChange = (index, event) => {
+    const values = [...responsables];
+    values[index][event.target.name] = event.target.value;
+    setResponsables(values);
+  };
+
+  const handleAddResponsable = () => {
+    setResponsables([...responsables, { nombre: '', edad: '', rol: '', telefono: '', correo: '' }]);
+  };
+
+  const handleRemoveResponsable = (index) => {
+    const values = [...responsables];
+    values.splice(index, 1);
+    setResponsables(values);
+  };
 
   const submit = async (e) => {
     e.preventDefault();
     const today = getTodayString();
 
-    // --- BLOQUE DE VALIDACIÓN ---
-    if (!nombre || !descripcion || !categoria || !presupuesto || !fechaInicio || !fechaCompromiso || !fechaPrimerAvance) {
-      alert('Complete todos los campos obligatorios.');
+    if (!nombre || !descripcion || !categoria || !presupuesto || !fechaInicio || !fechaCompromiso || !fechaPrimerAvance || !observacionesIniciales.trim()) {
+      alert('Complete todos los campos obligatorios, incluidas las observaciones.');
       return;
     }
     
-    // Validación 1: Fecha de inicio
-    if (fechaInicio < today) {
-      alert('La fecha de inicio no puede ser anterior a hoy.');
-      return;
-    }
-    
-    // Validación 2: Fechas de avance y compromiso vs Fecha de inicio
-    if (fechaCompromiso < fechaInicio) {
-      alert('La fecha de compromiso (fecha final) no puede ser anterior a la fecha de inicio.');
-      return;
-    }
-    if (fechaPrimerAvance < fechaInicio) {
-      alert('La fecha del primer avance no puede ser anterior a la fecha de inicio.');
-      return;
-    }
+    if (fechaInicio < today) return alert('La fecha de inicio no puede ser anterior a hoy.');
+    if (fechaCompromiso < fechaInicio) return alert('Fecha compromiso inválida.');
+    if (fechaPrimerAvance < fechaInicio) return alert('Fecha primer avance inválida.');
+    if (fechaCompromiso < fechaPrimerAvance) return alert('El compromiso no puede ser antes del avance.');
 
-    // Validación 3: Fecha de compromiso vs Fecha de primer avance
-    if (fechaCompromiso < fechaPrimerAvance) {
-      alert('La fecha de compromiso (final) no puede ser anterior a la fecha del primer avance.');
-      return;
-    }
-
-    // --- VALIDACIÓN DE PRESUPUESTO ACTUALIZADA ---
     const presupuestoNum = Number(presupuesto);
     if (isNaN(presupuestoNum) || presupuestoNum <= 0 || !Number.isInteger(presupuestoNum)) {
-      alert('El presupuesto debe ser un número entero positivo (sin comas ni puntos).');
+      alert('El presupuesto debe ser un entero positivo.');
       return;
     }
-    // --- FIN VALIDACIÓN ---
 
-    // Objeto de envío (sin duracion)
+    if (responsables.length === 0) {
+        alert('Debe agregar al menos un responsable.');
+        return;
+    }
+    for (let r of responsables) {
+        if (!r.nombre || !r.edad || !r.rol || !r.telefono || !r.correo) {
+            alert('Complete todos los campos de los responsables.');
+            return;
+        }
+        const edadResp = Number(r.edad);
+        if (edadResp < 1 || !Number.isInteger(edadResp)) {
+            alert('La edad del responsable debe ser un entero mayor a 0.');
+            return;
+        }
+    }
+
     const proyecto = {
       nombre,
       descripcion,
       categoria,
       userId,
-      presupuesto: presupuestoNum, // Enviamos el número validado
+      presupuesto: presupuestoNum,
       fechaInicio,
       fechaCompromiso,
       fechaPrimerAvance,
+      responsables,
+      observacionesIniciales
     };
 
     try {
@@ -99,7 +112,7 @@ export default function CrearProyecto() {
       });
       if (!res.ok) {
         const errorData = await res.json(); 
-        throw new Error(errorData.message || 'Error desconocido al crear el proyecto');
+        throw new Error(errorData.message || 'Error al crear el proyecto');
       }
       alert('Proyecto creado correctamente.');
       navigate('/proyectos');
@@ -110,70 +123,83 @@ export default function CrearProyecto() {
 
   return (
     <div className="crear-proyecto container mt-5 p-4 p-md-5 bg-light rounded shadow" style={{ maxWidth: '800px' }}>
-      
       <div className="mb-3">
-        <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">
-          &larr; Volver a Proyectos
-        </Link>
+        <Link to="/proyectos" className="btn btn-outline-secondary btn-sm">&larr; Volver a Proyectos</Link>
       </div>
-
       <h2 className="text-center mb-4">Crear Proyecto</h2>
       <form onSubmit={submit}>
-        <div className="row g-3">
+        {/* Datos Generales */}
+        <h4 className="mb-3">Datos Generales</h4>
+        <div className="row g-3 mb-4">
           <div className="col-12">
-            <label htmlFor="nombre" className="form-label">Nombre del Proyecto</label>
-            <input type="text" id="nombre" className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} required />
+            <label className="form-label">Nombre</label>
+            <input type="text" className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} required />
           </div>
           <div className="col-12">
-            <label htmlFor="descripcion" className="form-label">Descripción</label>
-            <textarea id="descripcion" className="form-control" rows="3" value={descripcion} onChange={e => setDescripcion(e.target.value)} required />
+            <label className="form-label">Descripción</label>
+            <textarea className="form-control" rows="2" value={descripcion} onChange={e => setDescripcion(e.target.value)} required />
+          </div>
+          <div className="col-12">
+            <label className="form-label">Observaciones del Proyecto</label>
+            <textarea className="form-control" rows="2" placeholder="Observaciones iniciales..." value={observacionesIniciales} onChange={e => setObservacionesIniciales(e.target.value)} required />
           </div>
           <div className="col-md-6">
-            <label htmlFor="categoria" className="form-label">Categoría</label>
-            <select id="categoria" className="form-select" value={categoria} onChange={e => setCategoria(e.target.value)} required>
+            <label className="form-label">Categoría</label>
+            <select className="form-select" value={categoria} onChange={e => setCategoria(e.target.value)} required>
               <option value="">-- Seleccione --</option>
-              {categorias.map(c => (
-                <option key={c._id || c.id} value={c.name || c.nombre}>
-                  {c.name || c.nombre}
-                </option>
-              ))}
+              {categorias.map(c => <option key={c._id || c.id} value={c.name || c.nombre}>{c.name || c.nombre}</option>)}
             </select>
           </div>
-
-          {/* --- CAMPO PRESUPUESTO ACTUALIZADO --- */}
           <div className="col-md-6">
-            <label htmlFor="presupuesto" className="form-label">Presupuesto</label>
-            <input 
-              type="text" // Cambiado a text para filtrar manualmente
-              pattern="[0-9]*" // Ayuda a teclados móviles a mostrar solo números
-              id="presupuesto" 
-              className="form-control" 
-              value={presupuesto} 
-              onChange={handlePresupuestoChange} // Usar el handler personalizado
-              placeholder="Ej: 5000000 (Solo números)"
-              required 
-            />
+            <label className="form-label">Presupuesto</label>
+            <input type="text" className="form-control" value={presupuesto} onChange={handlePresupuestoChange} placeholder="Solo números" required />
           </div>
-          {/* --- FIN CAMPO --- */}
-
           <div className="col-md-6">
-            <label htmlFor="fechaInicio" className="form-label">Fecha de Inicio</label>
-            <input type="date" id="fechaInicio" className="form-control" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} min={getTodayString()} required />
+            <label className="form-label">Fecha Inicio</label>
+            <input type="date" className="form-control" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} min={getTodayString()} required />
           </div>
-          
           <div className="col-md-6">
-            <label htmlFor="fechaPrimerAvance" className="form-label">Fecha primer avance</label>
-            <input type="date" id="fechaPrimerAvance" className="form-control" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} min={fechaInicio || getTodayString()} required />
+            <label className="form-label">Fecha Primer Avance</label>
+            <input type="date" className="form-control" value={fechaPrimerAvance} onChange={e => setFechaPrimerAvance(e.target.value)} min={fechaInicio} required />
           </div>
-
           <div className="col-md-6">
-            <label htmlFor="fechaCompromiso" className="form-label">Fecha Compromiso (Final)</label>
-            <input type="date" id="fechaCompromiso" className="form-control" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} min={fechaPrimerAvance || fechaInicio || getTodayString()} required />
+            <label className="form-label">Fecha Compromiso</label>
+            <input type="date" className="form-control" value={fechaCompromiso} onChange={e => setFechaCompromiso(e.target.value)} min={fechaPrimerAvance || fechaInicio} required />
           </div>
-
         </div>
-        <div className="text-center mt-4">
-          <button type="submit" className="btn btn-primary btn-lg crear-btn">Crear</button>
+
+        {/* Sección de Responsables */}
+        <h4 className="mb-3">Responsables del Proyecto</h4>
+        {responsables.map((responsable, index) => (
+          <div key={index} className="card p-3 mb-3 bg-white border">
+            <div className="row g-2">
+               <div className="col-md-6">
+                 <input type="text" name="nombre" placeholder="Nombre Completo" className="form-control" value={responsable.nombre} onChange={e => handleResponsableChange(index, e)} required />
+               </div>
+               <div className="col-md-2">
+                 <input type="number" name="edad" placeholder="Edad" className="form-control" value={responsable.edad} onChange={e => handleResponsableChange(index, e)} min="1" step="1" required />
+               </div>
+               <div className="col-md-4">
+                 <input type="text" name="rol" placeholder="Rol en el proyecto" className="form-control" value={responsable.rol} onChange={e => handleResponsableChange(index, e)} required />
+               </div>
+               <div className="col-md-6">
+                 <input type="text" name="telefono" placeholder="Teléfono" className="form-control" value={responsable.telefono} onChange={e => handleResponsableChange(index, e)} required />
+               </div>
+               <div className="col-md-6">
+                 <input type="email" name="correo" placeholder="Correo Electrónico" className="form-control" value={responsable.correo} onChange={e => handleResponsableChange(index, e)} required />
+               </div>
+            </div>
+            {responsables.length > 1 && (
+              <button type="button" className="btn btn-danger btn-sm mt-2" style={{width: 'fit-content'}} onClick={() => handleRemoveResponsable(index)}>Eliminar Responsable</button>
+            )}
+          </div>
+        ))}
+        <div className="text-center mb-4">
+            <button type="button" className="btn btn-success btn-sm" onClick={handleAddResponsable}>+ Agregar otro responsable</button>
+        </div>
+
+        <div className="text-center">
+          <button type="submit" className="btn btn-primary btn-lg crear-btn">Crear Proyecto</button>
         </div>
       </form>
     </div>

@@ -1,17 +1,21 @@
 // Seleccionar base de datos
 db = db.getSiblingDB('gestor_db');
 
-// Insertar usuario administrador inicial
+// Eliminar si existe para evitar duplicados o conflictos
+db.usuario.deleteOne({ _id: "1" });
+
+// Insertar usuario administrador inicial con los nuevos campos
 db.usuario.insertOne({
   _id: "1",
-  nombre: "Admin",
+  nombre: "Adminnistrador",
   apellidos: "Principal",
-  edad: 99,
-  estrato: 10,
+  edad: 0,
+  estrato: 0,
   fechaCreacion: new Date(),
   fechaModificacion: new Date(),
   ciudad: "Medellín",
   user: "admin",
   password: "admin123",
-  rol: "admin"
+  rol: "admin",
+  email: "cristian.diez@udea.edu.co" // Nuevo campo obligatorio
 });

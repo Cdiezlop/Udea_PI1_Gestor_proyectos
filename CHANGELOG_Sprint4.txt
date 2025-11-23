@@ -1,0 +1,34 @@
+CHANGELOG - Sprint 4 (Finalizado)
+
+Resumen General:
+Se completó el flujo de registro de usuarios con validaciones avanzadas y se robusteció el módulo de creación y gestión de proyectos, integrando responsables, cálculo automático de métricas y control de observaciones.
+
+Backend:
+- Entidad Usuario: Se agregó el campo 'email' y validaciones estrictas (@Min, @Max, @NotBlank) para edad y estrato.
+- Entidad Proyecto: 
+    - Se añadió lista de objetos 'Responsable' (embebe datos de contacto).
+    - Se incluyeron campos 'observacionesIniciales' y lógica para cálculo de 'duracion' en meses.
+- Servicios:
+    - UsuarioServiceImpl: Validaciones de unicidad de usuario y mapeo de nuevos campos.
+    - ProyectoServiceImpl: Implementación de lógica de negocio para calcular duración basada en fechas y validación obligatoria de comentarios para cambio de estado.
+- Datos:
+    - Se actualizó 'usuarioAdmin.js' con el nuevo esquema.
+    - Se creó 'datos_prueba.js' para poblar la BD con 5 usuarios y 15 proyectos realistas.
+
+Frontend:
+- Registro de Usuarios:
+    - Input select para 'Estrato' (1-6).
+    - Validación de 'Edad' como entero positivo.
+    - Campo de 'Correo Electrónico'.
+- Creación de Proyectos:
+    - Gestión dinámica de lista de responsables (Agregar/Eliminar).
+    - Validación cruzada de fechas (Inicio <= Primer Avance <= Compromiso).
+    - Input de 'Presupuesto' restringido a números enteros.
+    - Campo obligatorio de 'Observaciones Iniciales'.
+- Detalles y Administración:
+    - Visualización de tabla de responsables.
+    - Visualización de historial de observaciones (Creador y Admin).
+    - Bloqueo de cambio de estado si no se ingresa una observación (Admin).
+
+Seguridad:
+- Se aplicaron configuraciones base para el flujo de recuperación y cambio de contraseña seguro.

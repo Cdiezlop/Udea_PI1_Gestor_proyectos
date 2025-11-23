@@ -1,6 +1,5 @@
 package co.edu.udea.gestor_de_proyectos.service.implement;
 
-
 import co.edu.udea.gestor_de_proyectos.entity.Usuario;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearUsuarioDTO;
@@ -17,15 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * @author Tgl. Jhoan Villa.
- * Email: jhoan.villa
- * @version Id: <b>gestor-de-proyectos</b> 30/08/2025, 10:30 a. m.
- **/
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,6 +29,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioModel crearUsuario(CrearUsuarioDTO crearUsuarioDTO) {
+        if(usuarioRepository.findByUser(crearUsuarioDTO.getUser()).isPresent()){
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de usuario ya existe.");
+        }
+
         Usuario usuario = new Usuario();
         usuario.setId(generateId(null));
         usuario.setNombre(crearUsuarioDTO.getNombre());
@@ -47,7 +44,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setCiudad(crearUsuarioDTO.getCiudad());
         usuario.setUser(crearUsuarioDTO.getUser());
         usuario.setPassword(crearUsuarioDTO.getPassword());
+        usuario.setEmail(crearUsuarioDTO.getEmail());
         usuario.setRol("Basico");
+        
         Usuario savedUsuario = usuarioRepository.save(usuario);
         return mapToModel(savedUsuario);
     }
@@ -103,27 +102,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     	Usuario usuario = usuarioRepository
                 .findByUserAndPassword(loginUsuarioDTO.getUser(), loginUsuarioDTO.getPassword())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos"));
-                //.orElseThrow(() -> new RuntimeException("Usuario o contraseña incorrectos"));
     	return mapToModel(usuario);
     }
     
     @Override
     public void changePassword(String username, String newPassword, String confirmPassword) {
-        // Validar que las contraseñas coincidan
         if (!newPassword.equals(confirmPassword)) {
         	throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Las contraseñas no coinciden.");
-            //throw new IllegalArgumentException("Las contraseñas no coinciden.");
         }
-
-        // Buscar al usuario por username
         Usuario usuario = usuarioRepository.findByUser(username)
         		.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-                //.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         		
-        // Actualizar la contraseña
         usuario.setPassword(newPassword);
         usuarioRepository.save(usuario);
     }
-
 }
-
