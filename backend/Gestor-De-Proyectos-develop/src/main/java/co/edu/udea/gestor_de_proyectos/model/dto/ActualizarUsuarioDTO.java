@@ -17,6 +17,7 @@ public class ActualizarUsuarioDTO {
     private int edad;
     private int estrato;
     private LocalDateTime fechaModificacion;
+    private String email;
     private String ciudad;
     private String rol;
 }

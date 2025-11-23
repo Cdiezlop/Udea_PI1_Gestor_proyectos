@@ -18,6 +18,7 @@ public class CrearUsuarioDTO {
     private int estrato;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private String email;
     private String ciudad;
     private String user;
     private String password;

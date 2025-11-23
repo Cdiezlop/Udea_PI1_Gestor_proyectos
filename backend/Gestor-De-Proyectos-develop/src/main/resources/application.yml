@@ -6,7 +6,15 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/gestor_db
+      uri: mongodb://localhost:27017/GestorProyectos
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: jhoanvilla55@gmail.com
+    password: zcjhtuslhrcpdmkg
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 # Logs y configuración adicional
 logging:

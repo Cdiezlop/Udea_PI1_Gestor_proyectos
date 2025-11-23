@@ -6,6 +6,7 @@ import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.usuario.UsuarioModel;
 import co.edu.udea.gestor_de_proyectos.repository.UsuarioRepository;
+import co.edu.udea.gestor_de_proyectos.service.EmailService;
 import co.edu.udea.gestor_de_proyectos.service.FechaActualService;
 import co.edu.udea.gestor_de_proyectos.service.UsuarioService;
 import co.edu.udea.gestor_de_proyectos.model.dto.LoginUsuarioDTO;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +35,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final FechaActualService fechaActual;
+    private final EmailService emailService;
+
 
     @Override
     public UsuarioModel crearUsuario(CrearUsuarioDTO crearUsuarioDTO) {
@@ -44,6 +48,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setEstrato(crearUsuarioDTO.getEstrato());
         usuario.setFechaCreacion(fechaActual.getCurrentDate());
         usuario.setFechaModificacion(fechaActual.getCurrentDate());
+        usuario.setEmail(crearUsuarioDTO.getEmail());
         usuario.setCiudad(crearUsuarioDTO.getCiudad());
         usuario.setUser(crearUsuarioDTO.getUser());
         usuario.setPassword(crearUsuarioDTO.getPassword());
@@ -69,6 +74,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setEstrato(actualizarUsuarioDTO.getEstrato());
         usuario.setCiudad(actualizarUsuarioDTO.getCiudad());
         usuario.setFechaModificacion(fechaActual.getCurrentDate());
+        usuario.setEmail(actualizarUsuarioDTO.getEmail());
         Usuario updatedUsuario = usuarioRepository.save(usuario);
         return mapToModel(updatedUsuario);
     }
@@ -88,6 +94,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         model.setEstrato(usuario.getEstrato());
         model.setFechaCreacion(usuario.getFechaCreacion());
         model.setFechaModificacion(usuario.getFechaModificacion());
+        model.setEmail(usuario.getEmail());
         model.setCiudad(usuario.getCiudad());
         model.setRol(usuario.getRol());
         model.setUser(usuario.getUser());
@@ -125,5 +132,49 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Override
+    public void solicitarRecuperacion(String email) {
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        String token = UUID.randomUUID().toString();
+
+        usuario.setResetToken(token);
+        usuario.setResetTokenExpiration(LocalDateTime.now().plusMinutes(30));
+
+        usuarioRepository.save(usuario);
+
+        String enlace = "http://localhost:8088/gestor/api/usuario/reset-password?token=" + token;
+
+        String mensaje = """
+            Hola, solicitaste recuperar tu contraseña.
+            
+            Haz clic en el siguiente enlace para restablecerla:
+            %s
+
+            Este enlace expirará en 30 minutos.
+            """.formatted(enlace);
+
+        emailService.sendEmail(usuario.getEmail(), "Recuperación de contraseña", mensaje);
+    }
+
+    @Override
+    public void resetPassword(String token, String newPassword) {
+
+        Usuario usuario = usuarioRepository.findByResetToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido"));
+
+        if (usuario.getResetTokenExpiration().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El token ha expirado");
+        }
+
+        usuario.setPassword((newPassword));
+        usuario.setResetToken(null);
+        usuario.setResetTokenExpiration(null);
+
+        usuarioRepository.save(usuario);
+    }
 }
 

@@ -5,6 +5,7 @@ import co.edu.udea.gestor_de_proyectos.model.dto.LoginUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearUsuarioDTO;
 import co.edu.udea.gestor_de_proyectos.model.response.ApiResponse;
+import co.edu.udea.gestor_de_proyectos.model.usuario.ResetPasswordDTO;
 import co.edu.udea.gestor_de_proyectos.model.usuario.UsuarioModel;
 import co.edu.udea.gestor_de_proyectos.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -94,5 +95,17 @@ public class UsuarioController {
 
         // Devolver el mapa como respuesta
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        usuarioService.solicitarRecuperacion(email);
+        return ResponseEntity.ok("Correo enviado");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO dto) {
+        usuarioService.resetPassword(dto.getToken(), dto.getNewPassword());
+        return ResponseEntity.ok("Contraseña actualizada correctamente");
     }
 }

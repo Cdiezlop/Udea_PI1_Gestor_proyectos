@@ -27,4 +27,9 @@ public interface UsuarioService {
     
     void changePassword(String username, String newPassword, String confirmPassword);
 
+    void solicitarRecuperacion(String email);
+
+    void resetPassword(String token, String newPassword);
+
+
 }

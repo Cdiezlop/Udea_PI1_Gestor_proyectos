@@ -3,7 +3,6 @@ package co.edu.udea.gestor_de_proyectos.entity;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDate;
 
 import java.time.LocalDateTime;
 
@@ -24,8 +23,11 @@ public class Usuario {
     private int estrato;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private String email;
     private String ciudad;
     private String user;
     private String password;
     private String rol;
+    private String resetToken;
+    private LocalDateTime resetTokenExpiration;
 }

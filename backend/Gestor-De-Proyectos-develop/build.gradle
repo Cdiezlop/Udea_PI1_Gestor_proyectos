@@ -23,10 +23,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // --- MapStruct (mapeo DTO -> entidad) ---
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    implementation 'com.mailersend:java-sdk:1.0.0'
 
     // --- Lombok (para @Data, @RequiredArgsConstructor, etc.) ---
     compileOnly 'org.projectlombok:lombok:1.18.30'

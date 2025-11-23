@@ -23,6 +23,7 @@ public class UsuarioModel {
     private int estrato;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
+    private String email;
     private String ciudad;
     private String rol;
     private String user;
