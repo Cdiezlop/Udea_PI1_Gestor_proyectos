@@ -107,7 +107,7 @@ const usuarios = [
     user: "cristian.diez",
     password: "diez",
     rol: "Encargado",
-    email: "jhoan.villa@udea.edu.co", 
+    email: "cristian.diez@udea.edu.co", 
     fechaCreacion: new Date(),
     fechaModificacion: new Date()
   }
