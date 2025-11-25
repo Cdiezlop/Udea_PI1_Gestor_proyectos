@@ -81,6 +81,35 @@ const usuarios = [
     email: "sofia.ver@uni.edu.co",
     fechaCreacion: new Date(),
     fechaModificacion: new Date()
+  },
+    // --- USUARIOS DE ENCARGADOS DEL PROYECTO---
+  {
+    _id: "106",
+    nombre: "Jhoan",
+    apellidos: "Villa",
+    edad: 26,
+    estrato: 3,
+    ciudad: "Medellín",
+    user: "jhoan.vil",
+    password: "123",
+    rol: "Encargado",
+    email: "jhoan.villa@udea.edu.co", 
+    fechaCreacion: new Date(),
+    fechaModificacion: new Date()
+  },
+    {
+    _id: "107",
+    nombre: "Cristian",
+    apellidos: "Diez",
+    edad: 25,
+    estrato: 2,
+    ciudad: "Medellín",
+    user: "cristian.diez",
+    password: "diez",
+    rol: "Encargado",
+    email: "jhoan.villa@udea.edu.co", 
+    fechaCreacion: new Date(),
+    fechaModificacion: new Date()
   }
 ];
 
@@ -433,6 +462,47 @@ const proyectos = [
         tipoComentario: "Proyecto aceptado",
         comentario: "Propuesta innovadora y viable."
     }
+  },
+  // --- PROYECTOS DE ADMINISTRADORES () ---
+  {
+    nombre: "Plataforma de Gestión Documental",
+    descripcion: "Sistema web para la digitalización y control de archivos físicos de la alcaldía.",
+    userId: "106",
+    categoria: "Tecnología",
+    presupuesto: 45000000,
+    fechaInicio: new Date("2025-01-10"),
+    fechaPrimerAvance: new Date("2025-03-10"),
+    fechaCompromiso: new Date("2025-11-10"),
+    fechaFinalizacion: new Date("2025-11-10"),
+    duracion: 10,
+    estado: "En ejecución",
+    fechaCreacion: new Date(),
+    fechaModificacion: new Date(),
+    observacionesIniciales: "Servidores adquiridos, fase de análisis completada.",
+    responsables: [
+      { nombre: "Jhoan Villa", edad: 26, rol: "Líder de Proyecto", telefono: "3208889900", correo: "jhoan.villa@udea.edu.co" },
+      { nombre: "Cristian Diez", edad: 25, rol: "Líder de Proyecto1", telefono: "3507649727", correo: "cristian.diez@udea.edu.co" },
+    ]
+  },
+  {
+    nombre: "Plataforma de Gestión Documental",
+    descripcion: "Sistema web para la digitalización y control de archivos físicos de la alcaldía.",
+    userId: "107",
+    categoria: "Tecnología",
+    presupuesto: 45000000,
+    fechaInicio: new Date("2025-01-10"),
+    fechaPrimerAvance: new Date("2025-03-10"),
+    fechaCompromiso: new Date("2025-11-10"),
+    fechaFinalizacion: new Date("2025-11-10"),
+    duracion: 10,
+    estado: "En ejecución",
+    fechaCreacion: new Date(),
+    fechaModificacion: new Date(),
+    observacionesIniciales: "Servidores adquiridos, fase de análisis completada.",
+    responsables: [
+      { nombre: "Cristian Diez", edad: 25, rol: "Líder de Proyecto1", telefono: "3507649727", correo: "cristian.diez@udea.edu.co" },
+      { nombre: "Jhoan Villa", edad: 26, rol: "Líder de Proyecto2", telefono: "3208889900", correo: "jhoan.villa@udea.edu.co" },
+    ]
   }
 ];
 
