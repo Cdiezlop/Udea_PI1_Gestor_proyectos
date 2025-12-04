@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -118,6 +120,21 @@ public class ProyectoServiceImpl implements ProyectoService {
     public Page<ProyectoModel> proyectosPaginados(int page, int size) {
         return proyectoRepository.findAll(PageRequest.of(page, size)).map(this::mapToModel);
     }
+
+    @Override
+    public Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaInicio"));
+
+        boolean sinFiltros = (fechaDesde == null || fechaHasta == null) && (estado == null || estado.isBlank());
+        if (sinFiltros) {
+            Page<Proyecto> all = proyectoRepository.findAll(pageable);
+            return all.map(this::mapToModel);
+        }
+
+        Page<Proyecto> proyectoPage = proyectoRepository.findByFechaInicioBetweenAndEstado(fechaDesde, fechaHasta, estado, pageable);
+        return proyectoPage.map(this::mapToModel);
+    }
+
 
     @Override
     public ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO dto) {

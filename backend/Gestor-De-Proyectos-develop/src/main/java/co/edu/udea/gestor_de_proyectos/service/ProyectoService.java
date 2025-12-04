@@ -6,6 +6,7 @@ import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -17,6 +18,8 @@ public interface ProyectoService {
     ProyectoModel crearProyecto (CrearProyectoDTO crearProyectoDTO);
 
     Page<ProyectoModel> proyectosPaginados (int page, int size);
+
+    Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size);
 
     ProyectoModel actualizarProyecto (String id, ActualizarProyectoDTO actualizarProyectoDTO);
 

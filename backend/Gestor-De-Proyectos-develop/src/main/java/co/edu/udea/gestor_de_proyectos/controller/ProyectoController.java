@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -54,6 +56,16 @@ public class ProyectoController {
     @GetMapping("/pagina/{page}/{size}")
     public ResponseEntity<Page<ProyectoModel>> listarProyectos(@PathVariable int page, @PathVariable int size) {
         Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size);
+        return ResponseEntity.ok(proyectos);
+    }
+
+    @GetMapping("/pagina/filters/{page}/{size}")
+    public ResponseEntity<Page<ProyectoModel>> listarProyectos(@RequestParam(required = false) LocalDate fechaDesde,
+                                                               @RequestParam(required = false) LocalDate fechafin,
+                                                               @RequestParam(required = false) String estado,
+                                                               @PathVariable int page,
+                                                               @PathVariable int size) {
+        Page<ProyectoModel> proyectos = proyectoService.proyectosPorFechaYEstado(fechaDesde, fechafin, estado, page, size);
         return ResponseEntity.ok(proyectos);
     }
 
