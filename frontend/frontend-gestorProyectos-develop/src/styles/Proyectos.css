@@ -1,9 +1,30 @@
-.proyectos-list {
-  max-height: 400px;
-  overflow-y: auto;
+.controls-container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.crear-solicitud {
-  width: 100%;
-  max-width: 200px;
+.filters-row {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.list-group-item {
+    border: none;
+    border-radius: 8px !important;
+    transition: transform 0.2s;
+}
+
+.list-group-item:hover {
+    transform: translateY(-2px);
+    background-color: #fcfcfc;
+}
+
+/* Bordes de color según estado (sobreescribe bootstrap utilities si es necesario) */
+.border-success { border-left-color: #198754 !important; }
+.border-danger { border-left-color: #dc3545 !important; }
+.border-warning { border-left-color: #ffc107 !important; }
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6c757d;
 }

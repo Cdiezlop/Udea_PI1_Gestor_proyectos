@@ -21,15 +21,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -40,9 +42,22 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final ProyectoRepository proyectoRepository;
     private final CompromisosRepository compromisosRepository;
     private final FechaActualService fechaActual;
+    private final MongoTemplate mongoTemplate; // Inyectamos MongoTemplate para consultas dinámicas
 
     @Override
     public ProyectoModel crearProyecto(CrearProyectoDTO crearProyectoDTO) {
+        LocalDate fechaRegistro = fechaActual.getCurrentDate().toLocalDate();
+
+        if (crearProyectoDTO.getFechaInicio() != null) {
+            LocalDate fechaMinima = fechaRegistro.plusDays(15);
+            if (crearProyectoDTO.getFechaInicio().isBefore(fechaMinima)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "La fecha de inicio debe ser al menos 15 días después de la fecha actual.");
+            }
+        } else {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de inicio es obligatoria.");
+        }
+
         Proyecto proyecto = new Proyecto();
         proyecto.setId(generateId(null));
         proyecto.setNombre(crearProyectoDTO.getNombre());
@@ -53,24 +68,21 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setDirigidoa_a(crearProyectoDTO.getDirigidoa_a());
         proyecto.setObservacionesIniciales(crearProyectoDTO.getObservacionesIniciales());
         
-        proyecto.setFechaCreacion(fechaActual.getCurrentDate().toLocalDate());
-        proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
+        proyecto.setFechaCreacion(fechaRegistro);
+        proyecto.setFechaModificacion(fechaRegistro);
         proyecto.setFechaInicio(crearProyectoDTO.getFechaInicio());
-        proyecto.setFechaCompromiso(crearProyectoDTO.getFechaCompromiso());
-        proyecto.setFechaPrimerAvance(crearProyectoDTO.getFechaPrimerAvance());
-        proyecto.setFechaFinalizacion(crearProyectoDTO.getFechaCompromiso());
-
-        long duracionMeses = 0;
-        if (crearProyectoDTO.getFechaInicio() != null && crearProyectoDTO.getFechaCompromiso() != null) {
-            if (!crearProyectoDTO.getFechaInicio().isAfter(crearProyectoDTO.getFechaCompromiso())) {
-                Period period = Period.between(crearProyectoDTO.getFechaInicio(), crearProyectoDTO.getFechaCompromiso());
-                duracionMeses = period.getYears() * 12 + period.getMonths();
-                if (period.getDays() > 0) duracionMeses++;
-                if (duracionMeses == 0) duracionMeses = 1;
-            }
+        
+        if (crearProyectoDTO.getDuracionDias() != null && crearProyectoDTO.getDuracionDias() > 0) {
+            LocalDate fCompromiso = crearProyectoDTO.getFechaInicio().plusDays(crearProyectoDTO.getDuracionDias());
+            proyecto.setFechaCompromiso(fCompromiso);
+            proyecto.setFechaFinalizacion(fCompromiso);
+            proyecto.setDuracion(crearProyectoDTO.getDuracionDias());
+        } else {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La duración en días es obligatoria.");
         }
-        proyecto.setDuracion((int) duracionMeses);
+        
         proyecto.setEstado("Por revisar");
+        proyecto.setPrioridad(1); // PRIORIDAD ALTA para nuevos proyectos
 
         List<String> compromisosIds = new ArrayList<>();
         if (crearProyectoDTO.getCompromisos() != null) {
@@ -105,48 +117,75 @@ public class ProyectoServiceImpl implements ProyectoService {
     }
 
     @Override
+    public Page<ProyectoModel> proyectosPaginados(int page, int size) {
+        // Ordenar por Prioridad (ASC) y luego Fecha (DESC)
+        // 1 (Por revisar) saldrá antes que 2 (Aceptado/Rechazado)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio"))); 
+        return proyectoRepository.findAll(pageable).map(this::mapToModel);
+    }
+
+    @Override
+    public Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio")));
+
+        Query query = new Query().with(pageable);
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        // Construcción dinámica de filtros
+        if (estado != null && !estado.trim().isEmpty()) {
+            criteriaList.add(Criteria.where("estado").is(estado));
+        }
+        
+        if (fechaDesde != null && fechaHasta != null) {
+            criteriaList.add(Criteria.where("fechaInicio").gte(fechaDesde).lte(fechaHasta));
+        } else if (fechaDesde != null) {
+            criteriaList.add(Criteria.where("fechaInicio").gte(fechaDesde));
+        } else if (fechaHasta != null) {
+             criteriaList.add(Criteria.where("fechaInicio").lte(fechaHasta));
+        }
+
+        if (!criteriaList.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        }
+
+        // Ejecutar consulta con MongoTemplate
+        List<Proyecto> proyectos = mongoTemplate.find(query, Proyecto.class);
+        long count = mongoTemplate.count(Query.of(query).limit(0).skip(0), Proyecto.class);
+
+        return PageableExecutionUtils.getPage(proyectos, pageable, () -> count).map(this::mapToModel);
+    }
+    
+    // ... Resto de métodos (listar, porId, actualizar) iguales ...
+    @Override
     public List<ProyectoModel> listarProyectosPorUsuario(String userId) {
         return proyectoRepository.findAllByUserId(userId).stream().map(this::mapToModel).toList();
     }
 
     @Override
     public ProyectoModel proyectoPorId(String proyectoId) {
-        return proyectoRepository.findById(proyectoId)
-                .map(this::mapToModel)
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+        return proyectoRepository.findById(proyectoId).map(this::mapToModel).orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
-
+    
     @Override
-    public Page<ProyectoModel> proyectosPaginados(int page, int size) {
-        return proyectoRepository.findAll(PageRequest.of(page, size)).map(this::mapToModel);
+    public Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio")));
+        return proyectoRepository.buscarPorTermino(termino, pageable).map(this::mapToModel);
     }
-
-    @Override
-    public Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaInicio"));
-
-        boolean sinFiltros = (fechaDesde == null || fechaHasta == null) && (estado == null || estado.isBlank());
-        if (sinFiltros) {
-            Page<Proyecto> all = proyectoRepository.findAll(pageable);
-            return all.map(this::mapToModel);
-        }
-
-        Page<Proyecto> proyectoPage = proyectoRepository.findByFechaInicioBetweenAndEstado(fechaDesde, fechaHasta, estado, pageable);
-        return proyectoPage.map(this::mapToModel);
-    }
-
 
     @Override
     public ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO dto) {
-        Proyecto proyecto = proyectoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
+        Proyecto proyecto = proyectoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
         proyecto.setNombre(dto.getNombre());
         proyecto.setCategoria(dto.getCategoria());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setEstado(dto.getEstado());
+        // Si se actualiza estado manualmente, ajustar prioridad si es necesario
+        if ("Por revisar".equals(dto.getEstado())) proyecto.setPrioridad(1);
+        else proyecto.setPrioridad(2);
+        
         return mapToModel(proyectoRepository.save(proyecto));
     }
-
+    
     @Override
     public List<ProyectoModel> listarProyectos() {
         return proyectoRepository.findAll().stream().map(this::mapToModel).toList();
@@ -154,18 +193,16 @@ public class ProyectoServiceImpl implements ProyectoService {
 
     @Override
     public ProyectoModel cambiarEstado(String id, CambioDeEstadoModel model) {
-        Proyecto proyecto = proyectoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
+        Proyecto proyecto = proyectoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
         
         ComentariosDTO cDto = model.getComentarios();
-        
-        // Validación obligatoria de observación para el administrador
         if (cDto == null || cDto.getComentario() == null || cDto.getComentario().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Es obligatorio agregar una observación para cambiar el estado.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Es obligatorio agregar una observación.");
         }
 
         proyecto.setEstado(model.getEstado());
-        
+        proyecto.setPrioridad(2); // Al cambiar estado (Aceptado/Rechazado), baja prioridad en la lista
+
         ComentariosModel cm = new ComentariosModel();
         cm.setUser(cDto.getUser());
         cm.setFechaComentarios(fechaActual.getCurrentDate());
@@ -176,7 +213,6 @@ public class ProyectoServiceImpl implements ProyectoService {
         else cm.setTipoComentario("Actualización de estado");
         
         proyecto.setComentarios(cm);
-        
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
         return mapToModel(proyectoRepository.save(proyecto));
     }
@@ -199,7 +235,6 @@ public class ProyectoServiceImpl implements ProyectoService {
         model.setComentarios(proyecto.getComentarios());
         model.setCompromisosId(proyecto.getCompromisosId());
         model.setFechaCompromiso(proyecto.getFechaCompromiso());
-        model.setFechaPrimerAvance(proyecto.getFechaPrimerAvance());
         model.setResponsables(proyecto.getResponsables());
         model.setObservacionesIniciales(proyecto.getObservacionesIniciales());
         return model;

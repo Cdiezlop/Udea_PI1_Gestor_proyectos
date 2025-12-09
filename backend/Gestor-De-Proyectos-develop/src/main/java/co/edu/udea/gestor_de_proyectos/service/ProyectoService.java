@@ -9,25 +9,24 @@ import org.springframework.data.domain.Page;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Interfaz del servicio de proyectos
- * Define las operaciones disponibles sobre los proyectos.
- */
 public interface ProyectoService {
 
-    ProyectoModel crearProyecto (CrearProyectoDTO crearProyectoDTO);
+    ProyectoModel crearProyecto(CrearProyectoDTO crearProyectoDTO);
 
-    Page<ProyectoModel> proyectosPaginados (int page, int size);
-
-    Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size);
-
-    ProyectoModel actualizarProyecto (String id, ActualizarProyectoDTO actualizarProyectoDTO);
-
-    List<ProyectoModel> listarProyectos ();
-
-    ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel);
+    List<ProyectoModel> listarProyectosPorUsuario(String userId);
 
     ProyectoModel proyectoPorId(String proyectoId);
 
-    List<ProyectoModel> listarProyectosPorUsuario(String userId);
+    List<ProyectoModel> listarProyectos();
+
+    ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO actualizarProyectoDTO);
+
+    ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel);
+
+    // Nuevos métodos para paginación y búsqueda
+    Page<ProyectoModel> proyectosPaginados(int page, int size);
+
+    Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size);
+    
+    Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size);
 }

@@ -1,33 +1,25 @@
 package co.edu.udea.gestor_de_proyectos.controller;
 
-
-import co.edu.udea.gestor_de_proyectos.entity.Proyecto;
 import co.edu.udea.gestor_de_proyectos.model.dto.ActualizarProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.dto.CrearProyectoDTO;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.CambioDeEstadoModel;
 import co.edu.udea.gestor_de_proyectos.model.proyecto.ProyectoModel;
-import co.edu.udea.gestor_de_proyectos.service.ProyectoService;
+import co.edu.udea.gestor_de_proyectos.service.implement.ProyectoServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
 
-
-/**
- * Controlador REST para gestión de proyectos
- * Permite crear, listar, actualizar, eliminar y cambiar estado de proyectos.
- */
 @RestController
 @RequestMapping("/api/proyectos")
 @RequiredArgsConstructor
 public class ProyectoController {
 
-    private final ProyectoService proyectoService;
+    private final ProyectoServiceImpl proyectoService; 
 
     @PostMapping("/crear")
     public ResponseEntity<ProyectoModel> crearProyecto(@RequestBody CrearProyectoDTO crearProyectoDTO) {
@@ -58,6 +50,13 @@ public class ProyectoController {
         Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size);
         return ResponseEntity.ok(proyectos);
     }
+    
+    // Endpoint para buscar por término
+    @GetMapping("/buscar/{termino}/{page}/{size}")
+    public ResponseEntity<Page<ProyectoModel>> buscarProyectos(@PathVariable String termino, @PathVariable int page, @PathVariable int size) {
+        Page<ProyectoModel> proyectos = proyectoService.buscarProyectosGeneral(termino, page, size);
+        return ResponseEntity.ok(proyectos);
+    }
 
     @GetMapping("/pagina/filters/{page}/{size}")
     public ResponseEntity<Page<ProyectoModel>> listarProyectos(@RequestParam(required = false) LocalDate fechaDesde,
@@ -83,4 +82,3 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoModel);
     }
 }
-

@@ -10,14 +10,12 @@ public class CrearProyectoDTO {
     private String descripcion;
     private String userId;
     private String categoria;
-    private double presupuesto;
+    private Double presupuesto;
     private String dirigidoa_a;
-    private List<CrearCompromisoDTO> compromisos;
-
     private LocalDate fechaInicio;
-    private LocalDate fechaCompromiso;
-    private LocalDate fechaPrimerAvance;
-    
+    // Se elimina fechaCompromiso (se calcula) y fechaPrimerAvance (ya no aplica)
+    private Integer duracionDias; 
+    private List<CrearCompromisoDTO> compromisos;
     private List<CrearResponsableDTO> responsables;
-    private String observacionesIniciales; // Observación del creador
+    private String observacionesIniciales;
 }
