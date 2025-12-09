@@ -42,10 +42,13 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final ProyectoRepository proyectoRepository;
     private final CompromisosRepository compromisosRepository;
     private final FechaActualService fechaActual;
-    private final MongoTemplate mongoTemplate; // Inyectamos MongoTemplate para consultas dinámicas
+    private final MongoTemplate mongoTemplate; 
 
+    // ... (Método crearProyecto permanece IGUAL) ...
     @Override
     public ProyectoModel crearProyecto(CrearProyectoDTO crearProyectoDTO) {
+        // ... (Tu código existente de crearProyecto) ...
+        // (Copiar todo el contenido original de crearProyecto aquí, no cambia)
         LocalDate fechaRegistro = fechaActual.getCurrentDate().toLocalDate();
 
         if (crearProyectoDTO.getFechaInicio() != null) {
@@ -82,7 +85,7 @@ public class ProyectoServiceImpl implements ProyectoService {
         }
         
         proyecto.setEstado("Por revisar");
-        proyecto.setPrioridad(1); // PRIORIDAD ALTA para nuevos proyectos
+        proyecto.setPrioridad(1); 
 
         List<String> compromisosIds = new ArrayList<>();
         if (crearProyectoDTO.getCompromisos() != null) {
@@ -116,26 +119,36 @@ public class ProyectoServiceImpl implements ProyectoService {
         return mapToModel(savedProyecto);
     }
 
+    // MODIFICADO: Acepta userId
     @Override
-    public Page<ProyectoModel> proyectosPaginados(int page, int size) {
-        // Ordenar por Prioridad (ASC) y luego Fecha (DESC)
-        // 1 (Por revisar) saldrá antes que 2 (Aceptado/Rechazado)
+    public Page<ProyectoModel> proyectosPaginados(int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio"))); 
+        
+        if (userId != null && !userId.isEmpty()) {
+            Query query = new Query().with(pageable);
+            query.addCriteria(Criteria.where("userId").is(userId));
+            List<Proyecto> proyectos = mongoTemplate.find(query, Proyecto.class);
+            long count = mongoTemplate.count(Query.of(query).limit(0).skip(0), Proyecto.class);
+            return PageableExecutionUtils.getPage(proyectos, pageable, () -> count).map(this::mapToModel);
+        }
+
         return proyectoRepository.findAll(pageable).map(this::mapToModel);
     }
 
+    // MODIFICADO: Acepta userId
     @Override
-    public Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size) {
+    public Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio")));
 
         Query query = new Query().with(pageable);
         List<Criteria> criteriaList = new ArrayList<>();
 
-        // Construcción dinámica de filtros
+        if (userId != null && !userId.isEmpty()) {
+            criteriaList.add(Criteria.where("userId").is(userId));
+        }
         if (estado != null && !estado.trim().isEmpty()) {
             criteriaList.add(Criteria.where("estado").is(estado));
         }
-        
         if (fechaDesde != null && fechaHasta != null) {
             criteriaList.add(Criteria.where("fechaInicio").gte(fechaDesde).lte(fechaHasta));
         } else if (fechaDesde != null) {
@@ -148,14 +161,13 @@ public class ProyectoServiceImpl implements ProyectoService {
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        // Ejecutar consulta con MongoTemplate
         List<Proyecto> proyectos = mongoTemplate.find(query, Proyecto.class);
         long count = mongoTemplate.count(Query.of(query).limit(0).skip(0), Proyecto.class);
 
         return PageableExecutionUtils.getPage(proyectos, pageable, () -> count).map(this::mapToModel);
     }
     
-    // ... Resto de métodos (listar, porId, actualizar) iguales ...
+    // ... (listarProyectosPorUsuario, proyectoPorId sin cambios) ...
     @Override
     public List<ProyectoModel> listarProyectosPorUsuario(String userId) {
         return proyectoRepository.findAllByUserId(userId).stream().map(this::mapToModel).toList();
@@ -166,12 +178,34 @@ public class ProyectoServiceImpl implements ProyectoService {
         return proyectoRepository.findById(proyectoId).map(this::mapToModel).orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
     
+    // MODIFICADO: Acepta userId
     @Override
-    public Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size) {
+    public Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "prioridad").and(Sort.by(Sort.Direction.DESC, "fechaInicio")));
-        return proyectoRepository.buscarPorTermino(termino, pageable).map(this::mapToModel);
+        
+        Query query = new Query().with(pageable);
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        // Busqueda por término (regex simple)
+        if (termino != null && !termino.isEmpty()) {
+            criteriaList.add(Criteria.where("nombre").regex(termino, "i"));
+        }
+        // Filtro de usuario
+        if (userId != null && !userId.isEmpty()) {
+            criteriaList.add(Criteria.where("userId").is(userId));
+        }
+
+        if (!criteriaList.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        }
+
+        List<Proyecto> proyectos = mongoTemplate.find(query, Proyecto.class);
+        long count = mongoTemplate.count(Query.of(query).limit(0).skip(0), Proyecto.class);
+
+        return PageableExecutionUtils.getPage(proyectos, pageable, () -> count).map(this::mapToModel);
     }
 
+    // ... (El resto de métodos actualizarProyecto, listarProyectos, cambiarEstado, mapToModel, generateId IGUALES) ...
     @Override
     public ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO dto) {
         Proyecto proyecto = proyectoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado"));
@@ -179,7 +213,6 @@ public class ProyectoServiceImpl implements ProyectoService {
         proyecto.setCategoria(dto.getCategoria());
         proyecto.setFechaModificacion(fechaActual.getCurrentDate().toLocalDate());
         proyecto.setEstado(dto.getEstado());
-        // Si se actualiza estado manualmente, ajustar prioridad si es necesario
         if ("Por revisar".equals(dto.getEstado())) proyecto.setPrioridad(1);
         else proyecto.setPrioridad(2);
         
@@ -201,7 +234,7 @@ public class ProyectoServiceImpl implements ProyectoService {
         }
 
         proyecto.setEstado(model.getEstado());
-        proyecto.setPrioridad(2); // Al cambiar estado (Aceptado/Rechazado), baja prioridad en la lista
+        proyecto.setPrioridad(2);
 
         ComentariosModel cm = new ComentariosModel();
         cm.setUser(cDto.getUser());

@@ -45,26 +45,37 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectos);
     }
 
+    // MODIFICADO: Acepta userId opcional para filtrar si no es admin
     @GetMapping("/pagina/{page}/{size}")
-    public ResponseEntity<Page<ProyectoModel>> listarProyectos(@PathVariable int page, @PathVariable int size) {
-        Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size);
+    public ResponseEntity<Page<ProyectoModel>> listarProyectos(
+            @PathVariable int page, 
+            @PathVariable int size,
+            @RequestParam(required = false) String userId) {
+        Page<ProyectoModel> proyectos = proyectoService.proyectosPaginados(page, size, userId);
         return ResponseEntity.ok(proyectos);
     }
     
-    // Endpoint para buscar por término
+    // MODIFICADO: Acepta userId opcional
     @GetMapping("/buscar/{termino}/{page}/{size}")
-    public ResponseEntity<Page<ProyectoModel>> buscarProyectos(@PathVariable String termino, @PathVariable int page, @PathVariable int size) {
-        Page<ProyectoModel> proyectos = proyectoService.buscarProyectosGeneral(termino, page, size);
+    public ResponseEntity<Page<ProyectoModel>> buscarProyectos(
+            @PathVariable String termino, 
+            @PathVariable int page, 
+            @PathVariable int size,
+            @RequestParam(required = false) String userId) {
+        Page<ProyectoModel> proyectos = proyectoService.buscarProyectosGeneral(termino, page, size, userId);
         return ResponseEntity.ok(proyectos);
     }
 
+    // MODIFICADO: Acepta userId opcional
     @GetMapping("/pagina/filters/{page}/{size}")
-    public ResponseEntity<Page<ProyectoModel>> listarProyectos(@RequestParam(required = false) LocalDate fechaDesde,
-                                                               @RequestParam(required = false) LocalDate fechafin,
-                                                               @RequestParam(required = false) String estado,
-                                                               @PathVariable int page,
-                                                               @PathVariable int size) {
-        Page<ProyectoModel> proyectos = proyectoService.proyectosPorFechaYEstado(fechaDesde, fechafin, estado, page, size);
+    public ResponseEntity<Page<ProyectoModel>> listarProyectos(
+            @RequestParam(required = false) LocalDate fechaDesde,
+            @RequestParam(required = false) LocalDate fechafin,
+            @RequestParam(required = false) String estado,
+            @PathVariable int page,
+            @PathVariable int size,
+            @RequestParam(required = false) String userId) {
+        Page<ProyectoModel> proyectos = proyectoService.proyectosPorFechaYEstado(fechaDesde, fechafin, estado, page, size, userId);
         return ResponseEntity.ok(proyectos);
     }
 

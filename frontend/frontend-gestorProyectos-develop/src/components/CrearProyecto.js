@@ -16,7 +16,7 @@ function CrearProyecto() {
     descripcion: "",
     categoria: "",
     presupuesto: "",
-    dirigidoa_a: "", // Se mostrará como Observaciones Generales
+    dirigidoa_a: "", 
     fechaInicio: "",
     duracionDias: "",
     responsables: [],
@@ -28,7 +28,6 @@ function CrearProyecto() {
   const [success, setSuccess] = useState("");
   const [formValid, setFormValid] = useState(false);
 
-  // Efecto para validar el formulario completo en tiempo real
   useEffect(() => {
     const isFormComplete = validateForm();
     setFormValid(isFormComplete);
@@ -40,16 +39,19 @@ function CrearProyecto() {
     if (!formData.nombre || !formData.descripcion || !formData.categoria || !formData.presupuesto || !formData.dirigidoa_a || !formData.fechaInicio || !formData.duracionDias) {
         return false;
     }
-    // 2. Validación fecha inicio
+    // 2. Fecha
     if (new Date(formData.fechaInicio) < fechaMinimaInicio) return false;
     
-    // 3. Validación Responsables (Al menos 1 y todos completos con email válido)
+    // 3. Responsables
     if (formData.responsables.length === 0) return false;
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10}$/; // Valida exactamente 10 dígitos
+
     for (let r of formData.responsables) {
         if (!r.nombre || !r.rol || !r.correo || !r.telefono) return false;
         if (!emailRegex.test(r.correo)) return false;
+        if (!phoneRegex.test(r.telefono)) return false; // Nueva validación de teléfono
     }
 
     return true;
@@ -80,6 +82,12 @@ function CrearProyecto() {
 
   const handleResponsableChange = (index, e) => {
     const { name, value } = e.target;
+    
+    // Si es teléfono, solo permitimos números
+    if (name === "telefono") {
+        if (!/^\d*$/.test(value)) return; // Si no es número, no hace nada
+    }
+
     const newResponsables = [...formData.responsables];
     newResponsables[index][name] = value;
     setFormData({ ...formData, responsables: newResponsables });
@@ -93,7 +101,7 @@ function CrearProyecto() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formValid) {
-        setError("Por favor complete todos los campos requeridos y agregue al menos un responsable válido.");
+        setError("Por favor verifique los campos. El teléfono debe tener 10 dígitos.");
         return;
     }
     setError("");
@@ -123,7 +131,7 @@ function CrearProyecto() {
       
       <form onSubmit={handleSubmit} className="p-4 bg-light rounded shadow">
         
-        {/* Datos Básicos */}
+        {/* --- (El resto de inputs: Nombre, Categoría, Descripción se mantienen igual) --- */}
         <div className="row mb-3">
           <div className="col-md-6">
             <label className="form-label">Nombre del Proyecto</label>
@@ -145,7 +153,7 @@ function CrearProyecto() {
           <textarea className="form-control" name="descripcion" rows="3" value={formData.descripcion} onChange={handleChange} required></textarea>
         </div>
 
-        {/* Fechas y Duración */}
+        {/* --- Fechas y Duración --- */}
         <div className="row mb-3">
           <div className="col-md-4">
              <label className="form-label">Fecha de Inicio</label>
@@ -180,7 +188,6 @@ function CrearProyecto() {
           </div>
         </div>
 
-        {/* Campo Modificado: Dirigido a -> Observaciones Generales */}
         <div className="mb-3">
            <label className="form-label">Observaciones Generales</label>
            <input 
@@ -189,12 +196,12 @@ function CrearProyecto() {
              name="dirigidoa_a" 
              value={formData.dirigidoa_a} 
              onChange={handleChange} 
-             placeholder="Aqui puedes agregar otras fechas de avances y presentaciones o información relevante."
+             placeholder="Información adicional relevante..."
              required 
            />
         </div>
 
-        {/* Responsables - Validación Estricta */}
+        {/* --- Responsables (CON CAMBIOS) --- */}
         <div className="mt-4 p-3 border rounded bg-white">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5>Responsables (Obligatorio)</h5>
@@ -206,7 +213,7 @@ function CrearProyecto() {
             )}
 
             {formData.responsables.map((resp, index) => (
-            <div key={index} className="row mb-2 g-2 align-items-end">
+            <div key={index} className="row mb-2 g-2 align-items-start">
                 <div className="col-md-3">
                    <label className="small text-muted">Nombre</label>
                    <input type="text" className="form-control form-control-sm" name="nombre" value={resp.nombre} onChange={(e) => handleResponsableChange(index, e)} required />
@@ -216,21 +223,34 @@ function CrearProyecto() {
                    <input type="text" className="form-control form-control-sm" name="rol" value={resp.rol} onChange={(e) => handleResponsableChange(index, e)} required />
                 </div>
                  <div className="col-md-3">
-                   <label className="small text-muted">Correo (user@dominio.com)</label>
-                   <input type="email" className="form-control form-control-sm" name="correo" value={resp.correo} onChange={(e) => handleResponsableChange(index, e)} required />
+                   <label className="small text-muted">Correo</label>
+                   <input type="email" className="form-control form-control-sm" name="correo" value={resp.correo} onChange={(e) => handleResponsableChange(index, e)} placeholder="user@mail.com" required />
                 </div>
                 <div className="col-md-2">
                    <label className="small text-muted">Teléfono</label>
-                   <input type="text" className="form-control form-control-sm" name="telefono" value={resp.telefono} onChange={(e) => handleResponsableChange(index, e)} required />
+                   <input 
+                     type="text" 
+                     className="form-control form-control-sm" 
+                     name="telefono" 
+                     value={resp.telefono} 
+                     onChange={(e) => handleResponsableChange(index, e)} 
+                     placeholder="3001234567"
+                     maxLength="10"
+                     required 
+                   />
+                   {/* Mensaje de ayuda */}
+                   <div style={{fontSize: "0.7rem", color: "#6c757d", marginTop: "2px"}}>
+                     Solo números (10 dígitos)
+                   </div>
                 </div>
-                <div className="col-md-1">
+                <div className="col-md-1 align-self-center pt-2">
                     <button type="button" className="btn btn-danger btn-sm w-100" onClick={() => handleRemoveResponsable(index)}>X</button>
                 </div>
             </div>
             ))}
         </div>
 
-        {/* Observaciones (Opcional - Reemplaza Primer Avance) */}
+        {/* --- Observaciones Adicionales --- */}
         <div className="mb-4 mt-3">
            <label className="form-label">Comentarios Adicionales (Opcional)</label>
            <textarea className="form-control" name="observacionesIniciales" rows="2" value={formData.observacionesIniciales} onChange={handleChange}></textarea>

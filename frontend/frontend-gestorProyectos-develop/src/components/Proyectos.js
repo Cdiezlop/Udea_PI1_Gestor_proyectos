@@ -10,18 +10,14 @@ import "../styles/Proyectos.css";
 function Proyectos() {
   const navigate = useNavigate();
   
-  // Estados para datos y paginación
   const [proyectos, setProyectos] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const size = 5; // Cantidad de proyectos por página
+  const size = 5; 
 
-  // Estado para controlar qué tipo de vista estamos mostrando
-  // 'default' = paginación normal, 'search' = resultados de búsqueda, 'filter' = resultados filtrados
   const [viewMode, setViewMode] = useState('default');
+  const [searchTrigger, setSearchTrigger] = useState(0); // Nuevo disparador para forzar búsqueda
 
-  // Estados para los inputs
   const [searchTerm, setSearchTerm] = useState("");
   const [filtros, setFiltros] = useState({
     fechaDesde: "",
@@ -32,30 +28,35 @@ function Proyectos() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Efecto principal: Recarga cuando cambia la página o el modo de vista
   useEffect(() => {
     cargarProyectos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, viewMode]);
+  }, [page, viewMode, searchTrigger]); // Agregamos searchTrigger a las dependencias
 
   const cargarProyectos = async () => {
     setLoading(true);
     setError("");
+    
+    // Obtenemos info del usuario actual
+    const role = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId"); // Asegúrate de guardar esto en login
+    const isUser = role !== "admin"; 
+    const queryUserId = isUser ? userId : null;
+
     try {
       let data;
       
+      // NOTA: Debes actualizar tus servicios para aceptar el último parámetro (userId)
       if (viewMode === 'search' && searchTerm) {
-        data = await fetchBuscarProyectosService(searchTerm, page, size);
+        data = await fetchBuscarProyectosService(searchTerm, page, size, queryUserId);
       } else if (viewMode === 'filter') {
-        data = await fetchProyectosFiltrosService(page, size, filtros.fechaDesde, filtros.fechaFin, filtros.estado);
+        data = await fetchProyectosFiltrosService(page, size, filtros.fechaDesde, filtros.fechaFin, filtros.estado, queryUserId);
       } else {
-        // Modo default
-        data = await fetchProyectosPaginadosService(page, size);
+        data = await fetchProyectosPaginadosService(page, size, queryUserId);
       }
 
       setProyectos(data.content);
       setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
     } catch (err) {
       setError(err.message);
       setProyectos([]);
@@ -64,25 +65,29 @@ function Proyectos() {
     }
   };
 
-  // Manejadores de eventos
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!searchTerm.trim()) return;
-    setPage(0); // Reiniciar a primera página
-    setViewMode('search'); // Cambiar modo, esto disparará el useEffect
+    if (!searchTerm.trim()) {
+        handleReset(); // Si está vacío, resetea
+        return;
+    }
+    setPage(0); 
+    setViewMode('search'); 
+    setSearchTrigger(prev => prev + 1); // Forzar recarga si ya estaba en modo search
   };
 
   const handleFilter = (e) => {
     e.preventDefault();
     setPage(0);
     setViewMode('filter');
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleReset = () => {
     setSearchTerm("");
     setFiltros({ fechaDesde: "", fechaFin: "", estado: "" });
     setPage(0);
-    setViewMode('default'); // Volver a la carga normal
+    setViewMode('default'); 
   };
 
   const handlePageChange = (newPage) => {
@@ -91,27 +96,22 @@ function Proyectos() {
     }
   };
 
-  // Renderizado
   return (
     <div className="container mt-5 p-4 bg-light rounded shadow-lg">
       <h2 className="text-center mb-4">Gestión de Proyectos</h2>
 
-      {/* --- SECCIÓN DE CONTROLES (Búsqueda y Filtros) --- */}
       <div className="controls-container mb-4">
-        
-        {/* Barra de Búsqueda General */}
         <form onSubmit={handleSearch} className="d-flex mb-3 gap-2">
           <input
             type="text"
             className="form-control"
-            placeholder="Buscar por nombre de proyecto o usuario..."
+            placeholder="Buscar por nombre..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button type="submit" className="btn btn-info text-white">Buscar</button>
         </form>
 
-        {/* Filtros Avanzados */}
         <form onSubmit={handleFilter} className="filters-row p-3 border rounded bg-white">
           <h6 className="text-muted mb-2">Filtrar por:</h6>
           <div className="row g-2 align-items-end">
@@ -144,10 +144,12 @@ function Proyectos() {
                 <option value="Por revisar">Por revisar</option>
                 <option value="Aceptado">Aceptado</option>
                 <option value="Rechazado">Rechazado</option>
+                <option value="En ejecución">En ejecución</option>
+                <option value="Terminado">Terminado</option>
               </select>
             </div>
             <div className="col-md-3 d-flex gap-2">
-              <button type="submit" className="btn btn-primary btn-sm w-100">Aplicar Filtros</button>
+              <button type="submit" className="btn btn-primary btn-sm w-100">Aplicar</button>
               {(viewMode !== 'default') && (
                  <button type="button" className="btn btn-secondary btn-sm" onClick={handleReset}>Limpiar</button>
               )}
@@ -156,17 +158,14 @@ function Proyectos() {
         </form>
       </div>
 
-      {/* --- ESTADOS DE CARGA Y ERROR --- */}
       {loading && <p className="text-center my-4">Cargando resultados...</p>}
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* --- LISTA DE RESULTADOS --- */}
       {!loading && !error && (
         <>
           {proyectos.length === 0 ? (
              <div className="text-center py-5">
                <h5>No se encontraron proyectos.</h5>
-               <p className="text-muted">Intenta ajustar los filtros o registra uno nuevo.</p>
              </div>
           ) : (
             <div className="list-group mb-4">
@@ -196,7 +195,6 @@ function Proyectos() {
             </div>
           )}
 
-          {/* --- PAGINACIÓN --- */}
           {totalPages > 1 && (
             <div className="d-flex justify-content-center align-items-center gap-3">
               <button 
@@ -221,7 +219,6 @@ function Proyectos() {
         </>
       )}
 
-      {/* --- BOTÓN DE REGISTRO --- */}
       <div className="mt-4 text-center border-top pt-4">
         <button
           className="btn btn-success btn-lg px-5 shadow"
@@ -234,20 +231,28 @@ function Proyectos() {
   );
 }
 
-// Funciones auxiliares para estilos
+// Colores actualizados
 const getStatusColorClass = (estado) => {
     switch(estado) {
         case "Aceptado": return "border-success";
+        case "Terminado": return "border-info";
+        case "En ejecución": return "border-primary";
         case "Rechazado": return "border-danger";
-        default: return "border-warning"; // Por revisar
+        case "Aplazado": return "border-dark";
+        case "Atrasado": return "border-warning";
+        default: return "border-secondary"; // Por revisar u otros
     }
 };
 
 const getBadgeClass = (estado) => {
     switch(estado) {
         case "Aceptado": return "bg-success";
+        case "Terminado": return "bg-info text-dark";
+        case "En ejecución": return "bg-primary";
         case "Rechazado": return "bg-danger";
-        default: return "bg-warning text-dark";
+        case "Aplazado": return "bg-dark";
+        case "Atrasado": return "bg-warning text-dark";
+        default: return "bg-secondary";
     }
 };
 

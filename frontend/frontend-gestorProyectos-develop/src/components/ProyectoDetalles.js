@@ -47,14 +47,12 @@ function ProyectoDetalles() {
       
       <h2 className="text-center mb-4">Detalles del proyecto</h2>
       
-      {/* DATOS GENERALES */}
       <div className="card border-0 mb-4">
         <div className="card-header bg-primary text-white">
           <h3 className="h5 mb-0">{proyecto.nombre}</h3>
         </div>
         <div className="card-body px-0 py-3">
           <p className="px-3"><strong>Descripción:</strong> {proyecto.descripcion}</p>
-          {/* --- ACTUALIZACIÓN: MOSTRAR OBSERVACIONES INICIALES --- */}
           <p className="px-3"><strong>Observaciones Creador:</strong> {proyecto.observacionesIniciales || "Sin observaciones."}</p>
           
           <hr />
@@ -75,19 +73,16 @@ function ProyectoDetalles() {
               <p className="mb-0"><strong>Fecha Inicio:</strong> {proyecto.fechaInicio}</p>
             </div>
             <div className="col-md-6">
-              <p className="mb-0"><strong>Duración:</strong> {proyecto.duracion} {proyecto.duracion === 1 ? 'mes' : 'meses'}</p>
+              {/* CORRECCIÓN AQUÍ: Se cambió 'mes'/'meses' por 'día'/'días' */}
+              <p className="mb-0"><strong>Duración:</strong> {proyecto.duracion} {proyecto.duracion === 1 ? 'día' : 'días'}</p>
             </div>
             <div className="col-md-6">
               <p className="mb-0"><strong>Fecha Compromiso:</strong> {proyecto.fechaCompromiso}</p>
-            </div>
-            <div className="col-md-6">
-              <p className="mb-0"><strong>Fecha Primer Avance:</strong> {proyecto.fechaPrimerAvance}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* SECCIÓN RESPONSABLES */}
       <h4 className="mb-3">Responsables</h4>
       {proyecto.responsables && proyecto.responsables.length > 0 ? (
         <div className="table-responsive mb-4">
@@ -116,7 +111,6 @@ function ProyectoDetalles() {
         <p className="text-muted mb-4">No hay responsables registrados.</p>
       )}
 
-      {/* SECCIÓN OBSERVACIONES (COMENTARIOS ADMIN) */}
       {proyecto.comentarios && (
         <div className="alert alert-info mt-4">
           <h5 className="alert-heading">Observaciones del Administrador:</h5>

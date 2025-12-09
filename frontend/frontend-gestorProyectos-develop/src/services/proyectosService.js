@@ -1,8 +1,15 @@
 import { API_BASE } from "../config";
 
 // Obtener proyectos paginados (Vista por defecto)
-export const fetchProyectosPaginadosService = async (page, size) => {
-  const url = `${API_BASE}/api/proyectos/pagina/${page}/${size}`;
+// CORRECCIÓN: Se agrega el parámetro userId
+export const fetchProyectosPaginadosService = async (page, size, userId) => {
+  let url = `${API_BASE}/api/proyectos/pagina/${page}/${size}`;
+  
+  // Si existe userId, lo añadimos como Query Param
+  if (userId) {
+    url += `?userId=${userId}`;
+  }
+
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Error al cargar proyectos paginados");
@@ -13,8 +20,15 @@ export const fetchProyectosPaginadosService = async (page, size) => {
 };
 
 // Buscar proyectos por término (Nombre o Usuario)
-export const fetchBuscarProyectosService = async (termino, page, size) => {
-  const url = `${API_BASE}/api/proyectos/buscar/${termino}/${page}/${size}`;
+// CORRECCIÓN: Se agrega el parámetro userId
+export const fetchBuscarProyectosService = async (termino, page, size, userId) => {
+  let url = `${API_BASE}/api/proyectos/buscar/${termino}/${page}/${size}`;
+  
+  // Si existe userId, lo añadimos como Query Param
+  if (userId) {
+    url += `?userId=${userId}`;
+  }
+
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Error al buscar proyectos");
@@ -25,12 +39,24 @@ export const fetchBuscarProyectosService = async (termino, page, size) => {
 };
 
 // Filtrar proyectos por fecha y estado
-export const fetchProyectosFiltrosService = async (page, size, fechaDesde, fechaFin, estado) => {
-  let query = `?page=${page}&size=${size}`;
-  if (fechaDesde) query += `&fechaDesde=${fechaDesde}`;
-  if (fechaFin) query += `&fechafin=${fechaFin}`;
-  if (estado) query += `&estado=${estado}`;
+// CORRECCIÓN: Se agrega el parámetro userId
+export const fetchProyectosFiltrosService = async (page, size, fechaDesde, fechaFin, estado, userId) => {
+  // Construimos el query string inicial
+  let query = `?`;
+  
+  if (fechaDesde) query += `fechaDesde=${fechaDesde}&`;
+  if (fechaFin) query += `fechafin=${fechaFin}&`;
+  if (estado) query += `estado=${estado}&`;
+  if (userId) query += `userId=${userId}&`; // Agregamos userId al filtro
 
+  // Quitamos el último '&' si existe para limpiar la URL
+  if (query.endsWith('&')) {
+    query = query.slice(0, -1);
+  }
+
+  // Si no hay filtros, el query queda solo con '?' o vacío según prefieras, 
+  // pero el backend espera los params en la URL base o query params.
+  // Basado en tu código original, la URL base incluía page/size en el path:
   const url = `${API_BASE}/api/proyectos/pagina/filters/${page}/${size}${query}`;
   
   try {

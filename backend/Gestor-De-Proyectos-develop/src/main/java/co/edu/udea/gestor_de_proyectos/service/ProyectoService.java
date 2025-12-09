@@ -13,20 +13,22 @@ public interface ProyectoService {
 
     ProyectoModel crearProyecto(CrearProyectoDTO crearProyectoDTO);
 
+    // SE AGREGA String userId
+    Page<ProyectoModel> proyectosPaginados(int page, int size, String userId);
+
+    // SE AGREGA String userId
+    Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size, String userId);
+
     List<ProyectoModel> listarProyectosPorUsuario(String userId);
 
     ProyectoModel proyectoPorId(String proyectoId);
 
-    List<ProyectoModel> listarProyectos();
+    // SE AGREGA String userId
+    Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size, String userId);
 
     ProyectoModel actualizarProyecto(String id, ActualizarProyectoDTO actualizarProyectoDTO);
 
+    List<ProyectoModel> listarProyectos();
+
     ProyectoModel cambiarEstado(String id, CambioDeEstadoModel cambioDeEstadoModel);
-
-    // Nuevos métodos para paginación y búsqueda
-    Page<ProyectoModel> proyectosPaginados(int page, int size);
-
-    Page<ProyectoModel> proyectosPorFechaYEstado(LocalDate fechaDesde, LocalDate fechaHasta, String estado, int page, int size);
-    
-    Page<ProyectoModel> buscarProyectosGeneral(String termino, int page, int size);
 }
